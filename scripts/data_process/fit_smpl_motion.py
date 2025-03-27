@@ -201,7 +201,9 @@ def main(cfg : DictConfig) -> None:
     key_name_to_pkls = {"0-" + "_".join(data_path.split("/")[split_len:]).replace(".npz", ""): data_path for data_path in all_pkls}
     key_names = ["0-" + "_".join(data_path.split("/")[split_len:]).replace(".npz", "") for data_path in all_pkls]
     if not cfg.get("fit_all", False):
-        key_names = ["0-Transitions_mocap_mazen_c3d_dance_stand_poses"]
+        # key_names = ["0-Transitions_mocap_mazen_c3d_dance_stand_poses"]
+        # key_names = ["0-CMU_18_19_Justin_18_03_poses"]
+        key_names = ["0-HUMAN4D_Subject3_4_Carine_RGB_PlayingCards_S3S4_01_poses"]
     
     from multiprocessing import Pool
     jobs = key_names
