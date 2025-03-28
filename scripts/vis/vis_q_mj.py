@@ -87,7 +87,7 @@ def main(cfg : DictConfig) -> None:
             curr_motion_key = motion_data_keys[motion_id]
             curr_motion = motion_data[curr_motion_key]
             curr_time = int(time_step/dt) % curr_motion['dof'].shape[0]
-            
+            """ 
             mj_data.qpos[:3] = curr_motion['root_trans_offset'][curr_time]
             mj_data.qpos[3:7] = curr_motion['root_rot'][curr_time][[3, 0, 1, 2]]
             mj_data.qpos[7:] = curr_motion['dof'][curr_time]
@@ -112,7 +112,7 @@ def main(cfg : DictConfig) -> None:
             # for i in range(len(joints_opt)):
             #     viewer.user_scn.geoms[i].pos = joints_opt[i]
                 
-
+            """
             # Pick up changes to the physics state, apply perturbations, update options from GUI.
             viewer.sync()
             time_until_next_step = mj_model.opt.timestep - (time.time() - step_start)
