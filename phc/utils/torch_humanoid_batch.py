@@ -237,6 +237,7 @@ class Humanoid_Batch:
                 positions_world.append(root_positions)
                 rotations_world.append(root_rotations)
             else:
+                print(f"i={i}, parent={self._parents[i]}, rotations_world[parent].shape={rotations_world[self._parents[i]].shape}")
                 jpos = (torch.matmul(rotations_world[self._parents[i]][:, :, 0], expanded_offsets[:, :, i, :, None]).squeeze(-1) + positions_world[self._parents[i]])
                 rot_mat = torch.matmul(rotations_world[self._parents[i]], torch.matmul(self._local_rotation_mat[:,  (i):(i + 1)], rotations[:, :, (i - 1):i, :]))
                 # rot_mat = torch.matmul(rotations_world[self._parents[i]], rotations[:, :, (i - 1):i, :])
