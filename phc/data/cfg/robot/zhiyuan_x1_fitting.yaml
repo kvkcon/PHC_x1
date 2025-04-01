@@ -61,10 +61,10 @@ base_link: "body_pitch"
 
 joint_matches:
   - ["base_link_simple", "Pelvis"]
-  - ["left_hip_pitch", "L_Hip"]
+  - ["left_hip_roll", "L_Hip"]
   - ["left_knee_pitch", "L_Knee"]
   - ["left_ankle_roll", "L_Ankle"]
-  - ["right_hip_pitch", "R_Hip"]
+  - ["right_hip_roll", "R_Hip"]
   - ["right_knee_pitch", "R_Knee"]
   - ["right_ankle_roll", "R_Ankle"]
   - ["left_shoulder_roll", "L_Shoulder"]
