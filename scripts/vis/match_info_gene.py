@@ -53,7 +53,7 @@
 import mujoco
 
 # MJCF 文件路径
-mjcf_path = '/home/bbw/ASAPx1/PHC_x1/phc/data/assets/robot/agibot_x1/x1.xml'
+mjcf_path = '/home/bbw/ASAPx1/PHC_x1/phc/data/assets/robot/zhiyuan_x1/x1.xml'
 
 # 加载模型
 model = mujoco.MjModel.from_xml_path(mjcf_path)
@@ -70,4 +70,6 @@ joint_names = [mujoco.mj_id2name(model, mujoco.mjtObj.mjOBJ_JOINT, i)
 
 # 打印结果
 print("Body Names:", body_names)
+print("Total Body Names:", len(body_names))
 print("DOF Names (Joint Names):", joint_names)
+print("Total DOF Names:", len(joint_names))
