@@ -51,25 +51,27 @@
 # print("Right Upper Limb:", right_upper_limb)
 
 import mujoco
+import argparse
 
-# MJCF 文件路径
-mjcf_path = '/home/bbw/ASAPx1/PHC_x1/phc/data/assets/robot/zhiyuan_x1/x1.xml'
+def extract_model_info(mjcf_path):
+    model = mujoco.MjModel.from_xml_path(mjcf_path)
 
-# 加载模型
-model = mujoco.MjModel.from_xml_path(mjcf_path)
+    body_names = [mujoco.mj_id2name(model, mujoco.mjtObj.mjOBJ_BODY, i) 
+                  for i in range(model.nbody) 
+                  if mujoco.mj_id2name(model, mujoco.mjtObj.mjOBJ_BODY, i)]
 
-# 提取 body names
-body_names = [mujoco.mj_id2name(model, mujoco.mjtObj.mjOBJ_BODY, i) 
-              for i in range(model.nbody) 
-              if mujoco.mj_id2name(model, mujoco.mjtObj.mjOBJ_BODY, i)]
+    joint_names = [mujoco.mj_id2name(model, mujoco.mjtObj.mjOBJ_JOINT, i) 
+                   for i in range(model.njnt) 
+                   if mujoco.mj_id2name(model, mujoco.mjtObj.mjOBJ_JOINT, i)]
 
-# 提取 joint names（对应 dof_names）
-joint_names = [mujoco.mj_id2name(model, mujoco.mjtObj.mjOBJ_JOINT, i) 
-               for i in range(model.njnt) 
-               if mujoco.mj_id2name(model, mujoco.mjtObj.mjOBJ_JOINT, i)]
+    print("Body Names:", body_names)
+    print("Total Body Names:", len(body_names))
+    print("DOF Names (Joint Names):", joint_names)
+    print("Total DOF Names:", len(joint_names))
 
-# 打印结果
-print("Body Names:", body_names)
-print("Total Body Names:", len(body_names))
-print("DOF Names (Joint Names):", joint_names)
-print("Total DOF Names:", len(joint_names))
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Extract body and joint names from a MuJoCo MJCF file.")
+    parser.add_argument('--mjcf_path', type=str, default='/home/bbw/ASAPx1/PHC_x1/phc/data/assets/robot/zhiyuan_x1/x1_25dof_march.xml',
+                        help="Path to the MJCF file. Default is '/home/bbw/ASAPx1/PHC_x1/phc/data/assets/robot/zhiyuan_x1/x1_25dof_march.xml'.")
+    args = parser.parse_args()
+    extract_model_info(args.mjcf_path)

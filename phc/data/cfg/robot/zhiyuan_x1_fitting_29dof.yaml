@@ -41,8 +41,8 @@ left_foot_name: 'l_foot_roll'
 
 asset:
   assetRoot: "./"
-  assetFileName: "phc/data/assets/robot/zhiyuan_x1/x1_25dof_march.xml"
-  urdfFileName: "phc/data/assets/robot/zhiyuan_x1/x1_25dof_march.xml"
+  assetFileName: "phc/data/assets/robot/zhiyuan_x1/x1.xml"
+  urdfFileName: "phc/data/assets/robot/zhiyuan_x1/x1.xml"
 
 extend_config:
   - joint_name: "head_link"
