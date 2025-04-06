@@ -35,7 +35,9 @@ class Humanoid_Batch:
 
     def __init__(self, cfg, device = torch.device("cpu")):
         self.cfg = cfg
+        print(f'cfg: {cfg}')
         self.mjcf_file = cfg.asset.assetFileName
+        print(f'cfg.mjcf_file: {self.mjcf_file}')
         
         parser = XMLParser(remove_blank_text=True)
         tree = parse(BytesIO(open(self.mjcf_file, "rb").read()), parser=parser,)

@@ -116,8 +116,11 @@ def process_motion(key_names, key_name_to_pkls, cfg):
         for iteration in range(cfg.get("fitting_iterations", 500)):
             print(f"iteration: {iteration}")
             print(f"root_pos_offset: {root_pos_offset}")
+            print(f"root_rot_new.shape: {root_rot_new.shape}")
             print(f"root_rot_new: {root_rot_new}")
+            print(f"humanoid_fk.dof_axis.shape: {humanoid_fk.dof_axis.shape}")
             print(f"humanoid_fk.dof_axis: {humanoid_fk.dof_axis}")
+            print(f"dof_pos_new.shape: {dof_pos_new.shape}")
             print(f"dof_pos_new: {dof_pos_new}")
             print(f"N: {N}")
             print(f"num_augment_joint: {num_augment_joint}")
