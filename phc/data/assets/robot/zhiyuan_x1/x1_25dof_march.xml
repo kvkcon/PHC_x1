@@ -330,12 +330,12 @@
         <motor name="right_knee_pitch_motor" joint="right_knee_pitch_joint" gear="1" />
         <motor name="right_ankle_pitch_motor" joint="right_ankle_pitch_joint" gear="1" />
         <motor name="right_ankle_roll_motor" joint="right_ankle_roll_joint" gear="1" />
-        <motor name="waist_motor_a_joint" joint="waist_motor_a_joint" gear="1" />
-        <motor name="waist_motor_b_joint" joint="waist_motor_b_joint" gear="1" />
+        <motor name="left_shoulder_pitch_motor" joint="left_shoulder_pitch_joint" gear="1" />
         <motor name="left_shoulder_roll_motor" joint="left_shoulder_roll_joint" gear="1" />
         <motor name="left_shoulder_yaw_motor" joint="left_shoulder_yaw_joint" gear="1" />
         <motor name="left_elbow_pitch_motor" joint="left_elbow_pitch_joint" gear="1" />
         <motor name="left_elbow_yaw_motor" joint="left_elbow_yaw_joint" gear="1" />
+        <motor name="right_shoulder_pitch_motor" joint="right_shoulder_pitch_joint" gear="1" />
         <motor name="right_shoulder_roll_motor" joint="right_shoulder_roll_joint" gear="1" />
         <motor name="right_shoulder_yaw_motor" joint="right_shoulder_yaw_joint" gear="1" />
         <motor name="right_elbow_pitch_motor" joint="right_elbow_pitch_joint" gear="1" />
@@ -343,5 +343,6 @@
         <motor name="lumbar_yaw_joint_motor" joint="lumbar_yaw_joint" gear="1" />
         <motor name="lumbar_roll_joint_motor" joint="lumbar_roll_joint" gear="1" />
         <motor name="lumbar_pitch_joint_motor" joint="lumbar_pitch_joint" gear="1" />
+
     </actuator>
 </mujoco>
