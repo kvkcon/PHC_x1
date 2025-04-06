@@ -4,6 +4,23 @@ import xml.etree.ElementTree as ET
 import numpy as np
 import argparse
 
+# 添加ET.indent功能for Python 3.8 before
+def indent(elem, level=0, space="  "):
+    """为ElementTree添加缩进以美化XML输出"""
+    i = "\n" + level * space
+    if len(elem):
+        if not elem.text or not elem.text.strip():
+            elem.text = i + space
+        if not elem.tail or not elem.tail.strip():
+            elem.tail = i
+        for elem in elem:
+            indent(elem, level + 1, space)
+        if not elem.tail or not elem.tail.strip():
+            elem.tail = i
+    else:
+        if level and (not elem.tail or not elem.tail.strip()):
+            elem.tail = i
+
 def quaternion_to_euler(quat):
     """将四元数转换为欧拉角(RPY)"""
     # 假设四元数格式为(w, x, y, z)
@@ -321,7 +338,10 @@ def convert_mujoco_to_urdf(mujoco_path, urdf_path, mesh_dir="meshes"):
     
     # 将URDF树写入文件
     urdf_tree = ET.ElementTree(urdf_root)
-    ET.indent(urdf_tree, space="  ")
+    
+    # 使用自定义的indent函数代替ET.indent
+    indent(urdf_root)
+    
     urdf_tree.write(urdf_path, encoding="utf-8", xml_declaration=True)
     print(f"已将MuJoCo模型转换为URDF并保存至: {urdf_path}")
 
