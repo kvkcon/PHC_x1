@@ -114,6 +114,13 @@ def process_motion(key_names, key_name_to_pkls, cfg):
 
         
         for iteration in range(cfg.get("fitting_iterations", 500)):
+            print(f"iteration: {iteration}")
+            print(f"root_pos_offset: {root_pos_offset}")
+            print(f"root_rot_new: {root_rot_new}")
+            print(f"humanoid_fk.dof_axis: {humanoid_fk.dof_axis}")
+            print(f"dof_pos_new: {dof_pos_new}")
+            print(f"N: {N}")
+            print(f"num_augment_joint: {num_augment_joint}")
             pose_aa_h1_new = torch.cat([root_rot_new[None, :, None], humanoid_fk.dof_axis * dof_pos_new, torch.zeros((1, N, num_augment_joint, 3)).to(device)], axis = 2)
             fk_return = humanoid_fk.fk_batch(pose_aa_h1_new, root_trans_offset[None, ] + root_pos_offset )
             
