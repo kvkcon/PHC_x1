@@ -3,9 +3,9 @@
     <size njmax="500" nconmax="100" />
     <asset>
         <mesh name="base_link_simple" file="base_link_simple.STL" />
-        <mesh name="lumber_yaw" file="lumber_yaw.STL" />
-        <mesh name="lumber_roll" file="lumber_roll.STL" />
-        <mesh name="lumber_pitch" file="lumber_pitch.STL" />
+        <mesh name="lumbar_yaw" file="lumbar_yaw.STL" />
+        <mesh name="lumbar_roll" file="lumbar_roll.STL" />
+        <mesh name="lumbar_pitch" file="lumbar_pitch.STL" />
         <mesh name="left_shoulder_pitch" file="left_shoulder_pitch.STL" />
         <mesh name="left_shoulder_roll" file="left_shoulder_roll.STL" />
         <mesh name="left_shoulder_yaw" file="left_shoulder_yaw.STL" />
@@ -60,18 +60,18 @@
             <inertial pos="0.00252285 -0.00063439 0.0302341" quat="0.703473 0.710702 -0.00394586 0.00368824" mass="4.30416" diaginertia="0.0268062 0.0218101 0.0108301" />
             <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.8 0.4 0 1" mesh="base_link_simple" />
             <geom type="mesh" rgba="0.8 0.4 0 1" mesh="base_link_simple" />
-            <body name="lumber_yaw" pos="0.00245 0 0.115534" quat="1 0 0 -2.27456e-05">
+            <body name="lumbar_yaw" pos="0.00245 0 0.115534" quat="1 0 0 -2.27456e-05">
                 <inertial pos="-0.0180007 1.4e-06 0.0243298" quat="-7.72625e-06 0.78309 -2.54549e-05 0.621909" mass="0.362519" diaginertia="0.000655093 0.00045823 0.000342457" />
-                <joint name="lumber_yaw_joint" pos="0 0 0" axis="0 0 1" limited="true" range="-3.14 3.14" />
-                <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="1 0.4 0.4 1" mesh="lumber_yaw" />
-                <body name="lumber_roll" pos="0 0 0.0405" quat="0.5 0.5 -0.5 -0.5">
+                <joint name="lumbar_yaw_joint" pos="0 0 0" axis="0 0 1" limited="true" range="-3.14 3.14" />
+                <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="1 0.4 0.4 1" mesh="lumbar_yaw" />
+                <body name="lumbar_roll" pos="0 0 0.0405" quat="0.5 0.5 -0.5 -0.5">
                     <inertial pos="-0.00029919 0.0003642 -0.00019197" quat="0.773215 -0.138631 -0.0225684 0.618394" mass="0.0341207" diaginertia="5.46439e-06 4.90308e-06 4.81253e-06" />
-                    <joint name="lumber_roll_joint" pos="0 0 0" axis="0 0 1" limited="true" range="-3.14 3.14" />
-                    <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="1 0.4 0.4 1" mesh="lumber_roll" />
-                    <body name="lumber_pitch" pos="0 0 0" quat="0.707107 0 0.707107 0">
+                    <joint name="lumbar_roll_joint" pos="0 0 0" axis="0 0 1" limited="true" range="-3.14 3.14" />
+                    <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="1 0.4 0.4 1" mesh="lumbar_roll" />
+                    <body name="lumbar_pitch" pos="0 0 0" quat="0.707107 0 0.707107 0">
                         <inertial pos="0.00070244 0.210726 -0.00117164" quat="0.701682 0.712112 -0.0198998 -0.0119722" mass="8.85711" diaginertia="0.147956 0.111655 0.0606701" />
-                        <joint name="lumber_pitch_joint" pos="0 0 0" axis="0 0 -1" limited="true" range="-3.14 3.14" />
-                        <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.4 1 0.4 1" mesh="lumber_pitch" />
+                        <joint name="lumbar_pitch_joint" pos="0 0 0" axis="0 0 -1" limited="true" range="-3.14 3.14" />
+                        <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.4 1 0.4 1" mesh="lumbar_pitch" />
                         <body name="left_shoulder_pitch" pos="0 0.256 -0.1458" quat="0 0 0 -1">
                             <inertial pos="-0.00251212 -0.00149141 -0.0567447" quat="0.995975 -0.00474479 -0.0345991 0.0825443" mass="1.00679" diaginertia="0.00108562 0.000958162 0.000853398" />
                             <joint name="left_shoulder_pitch_joint" pos="0 0 0" axis="0 0 -1" limited="true" range="-3.14 3.14" />
@@ -317,4 +317,31 @@
             </body>
         </body>
     </worldbody>
+    <actuator>
+        <motor name="left_hip_pitch_motor" joint="left_hip_pitch_joint" gear="1" />
+        <motor name="left_hip_roll_motor" joint="left_hip_roll_joint" gear="1" />
+        <motor name="left_hip_yaw_motor" joint="left_hip_yaw_joint" gear="1" />
+        <motor name="left_knee_pitch_motor" joint="left_knee_pitch_joint" gear="1" />
+        <motor name="left_ankle_pitch_motor" joint="left_ankle_pitch_joint" gear="1" />
+        <motor name="left_ankle_roll_motor" joint="left_ankle_roll_joint" gear="1" />
+        <motor name="right_hip_pitch_motor" joint="right_hip_pitch_joint" gear="1" />
+        <motor name="right_hip_roll_motor" joint="right_hip_roll_joint" gear="1" />
+        <motor name="right_hip_yaw_motor" joint="right_hip_yaw_joint" gear="1" />
+        <motor name="right_knee_pitch_motor" joint="right_knee_pitch_joint" gear="1" />
+        <motor name="right_ankle_pitch_motor" joint="right_ankle_pitch_joint" gear="1" />
+        <motor name="right_ankle_roll_motor" joint="right_ankle_roll_joint" gear="1" />
+        <motor name="waist_motor_a_joint" joint="waist_motor_a_joint" gear="1" />
+        <motor name="waist_motor_b_joint" joint="waist_motor_b_joint" gear="1" />
+        <motor name="left_shoulder_roll_motor" joint="left_shoulder_roll_joint" gear="1" />
+        <motor name="left_shoulder_yaw_motor" joint="left_shoulder_yaw_joint" gear="1" />
+        <motor name="left_elbow_pitch_motor" joint="left_elbow_pitch_joint" gear="1" />
+        <motor name="left_elbow_yaw_motor" joint="left_elbow_yaw_joint" gear="1" />
+        <motor name="right_shoulder_roll_motor" joint="right_shoulder_roll_joint" gear="1" />
+        <motor name="right_shoulder_yaw_motor" joint="right_shoulder_yaw_joint" gear="1" />
+        <motor name="right_elbow_pitch_motor" joint="right_elbow_pitch_joint" gear="1" />
+        <motor name="right_elbow_yaw_motor" joint="right_elbow_yaw_joint" gear="1" />
+        <motor name="lumbar_yaw_joint_motor" joint="lumbar_yaw_joint" gear="1" />
+        <motor name="lumbar_roll_joint_motor" joint="lumbar_roll_joint" gear="1" />
+        <motor name="lumbar_pitch_joint_motor" joint="lumbar_pitch_joint" gear="1" />
+    </actuator>
 </mujoco>
