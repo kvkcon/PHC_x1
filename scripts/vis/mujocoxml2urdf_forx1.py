@@ -237,7 +237,8 @@ def convert_mujoco_to_urdf(mujoco_path, urdf_path, mesh_dir="meshes"):
             collision_geometry = ET.SubElement(collision, "geometry")
             if geom_type == "mesh" and geom_mesh in meshes:
                 mesh_elem = ET.SubElement(collision_geometry, "mesh")
-                mesh_elem.set("filename", f"package://{mesh_dir}/{meshes[geom_mesh]}")
+                # mesh_elem.set("filename", f"package://{mesh_dir}/{meshes[geom_mesh]}")
+                mesh_elem.set("filename", f"{mesh_dir}/{meshes[geom_mesh]}")
             elif geom_type == "box" and geom_size:
                 size_values = [float(x) for x in geom_size.split()]
                 box_elem = ET.SubElement(collision_geometry, "box")
