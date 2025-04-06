@@ -189,7 +189,8 @@ def convert_mujoco_to_urdf(mujoco_path, urdf_path, mesh_dir="meshes"):
             visual_geometry = ET.SubElement(visual, "geometry")
             if geom_type == "mesh" and geom_mesh in meshes:
                 mesh_elem = ET.SubElement(visual_geometry, "mesh")
-                mesh_elem.set("filename", f"package://{mesh_dir}/{meshes[geom_mesh]}")
+                # mesh_elem.set("filename", f"package://{mesh_dir}/{meshes[geom_mesh]}")
+                mesh_elem.set("filename", f"{mesh_dir}/{meshes[geom_mesh]}")
                 # 如果有scale处理
             elif geom_type == "box" and geom_size:
                 size_values = [float(x) for x in geom_size.split()]
@@ -349,7 +350,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Convert MuJoCo XML to URDF")
     parser.add_argument("mujoco_path", help="Path to the MuJoCo XML file")
     parser.add_argument("urdf_path", help="Path to save the URDF file")
-    parser.add_argument("--mesh_dir", default="meshes", help="Directory for meshes (default: meshes)")
+    parser.add_argument("--mesh_dir", default="../meshes", help="Directory for meshes (default: ../meshes; package://path/to/meshes for ROS)")
     
     args = parser.parse_args()
     
