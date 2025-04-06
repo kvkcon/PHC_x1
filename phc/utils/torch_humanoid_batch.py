@@ -35,18 +35,16 @@ class Humanoid_Batch:
 
     def __init__(self, cfg, device = torch.device("cpu")):
         self.cfg = cfg
-        print(f'cfg: {cfg}')
         self.mjcf_file = cfg.asset.assetFileName
-        print(f'cfg.mjcf_file: {self.mjcf_file}')
         
         parser = XMLParser(remove_blank_text=True)
         tree = parse(BytesIO(open(self.mjcf_file, "rb").read()), parser=parser,)
-        self.dof_axis = []
-        joints = sorted([j.attrib['name'] for j in tree.getroot().find("worldbody").findall('.//joint')])
-        motors = sorted([m.attrib['name'] for m in tree.getroot().find("actuator").getchildren()])
+        
+        # Get all actuated joints from motors
+        motors = sorted([m.attrib['joint'] for m in tree.getroot().find("actuator").findall('.//motor')])
         assert(len(motors) > 0, "No motors found in the mjcf file")
         
-        self.num_dof = len(motors) 
+        self.num_dof = len(motors)  # Should be 29 as per the XML
         self.num_extend_dof = self.num_dof
         
         self.mjcf_data = mjcf_data = self.from_mjcf(self.mjcf_file)
@@ -57,22 +55,21 @@ class Humanoid_Batch:
         self._local_rotation = mjcf_data['local_rotation'][None, ].to(device)
         self.actuated_joints_idx = np.array([self.body_names.index(k) for k, v in mjcf_data['body_to_joint'].items()])
         
-        for m in motors:
-            if not m in joints:
-                print(m)
+        # Create a mapping of joint names to their axis information
+        joint_to_axis = {}
+        for j in tree.getroot().find("worldbody").findall('.//joint'):
+            if 'axis' in j.attrib:
+                joint_to_axis[j.attrib['name']] = [float(i) for i in j.attrib['axis'].split()]
         
-        if "type" in tree.getroot().find("worldbody").findall('.//joint')[0].attrib and tree.getroot().find("worldbody").findall('.//joint')[0].attrib['type'] == "free":
-            for j in tree.getroot().find("worldbody").findall('.//joint')[1:]:
-                self.dof_axis.append([int(i) for i in j.attrib['axis'].split(" ")])
-            self.has_freejoint = True
-        elif not "type" in tree.getroot().find("worldbody").findall('.//joint')[0].attrib:
-            for j in tree.getroot().find("worldbody").findall('.//joint'):
-                self.dof_axis.append([int(i) for i in j.attrib['axis'].split(" ")])
-            self.has_freejoint = True
-        else:
-            for j in tree.getroot().find("worldbody").findall('.//joint')[6:]:
-                self.dof_axis.append([int(i) for i in j.attrib['axis'].split(" ")])
-            self.has_freejoint = False
+        # Check if there's a freejoint (floating base)
+        freejoint = tree.getroot().find("worldbody").find('.//freejoint')
+        self.has_freejoint = freejoint is not None
+        
+        # Build dof_axis array based on motors (actuated joints)
+        self.dof_axis = []
+        for motor_joint in motors:
+            if motor_joint in joint_to_axis:
+                self.dof_axis.append(joint_to_axis[motor_joint])
         
         self.dof_axis = torch.tensor(self.dof_axis)
 
