@@ -228,7 +228,7 @@
   <joint name="left_shoulder_yaw_joint" type="revolute">
     <parent link="link_left_shoulder_roll" />
     <child link="link_left_shoulder_yaw" />
-    <origin xyz="0.0 0.1252 -0.0313" rpy="0.0 1.5707963267948966 0.0" />
+    <origin xyz="0.0 0.1252 -0.0313" rpy="1.5707997741256383 1.5707963267948966 0.0" />
     <axis xyz="0 0 1" />
     <limit lower="-3.14" upper="3.14" effort="150.0" velocity="10" />
     <dynamics damping="1.0" />
