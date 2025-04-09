@@ -185,17 +185,17 @@
 
       <body name="link_left_hip_pitch" pos="0.00245 0.092277 -0.012143" quat="0.65328 0.270599 -0.270598 0.653282" gravcomp="0">
         <inertial pos="-4.816e-05 -0.0107584 -0.0540778" quat="0.701067 -0.0888726 0.120485 0.697202" mass="1.67336" diaginertia="0.00256418 0.00234466 0.00215142"/>
-        <joint name="left_hip_pitch_joint" type="hinge" pos="0 0 0" axis="0 0 -1" damping="1" range="-6.28 3.14" />
+        <joint name="left_hip_pitch_joint" type="hinge" pos="0 0 0" axis="0 0 1" damping="1" range="-3.14 6.28" />
         <geom type="mesh" mesh="mesh_left_hip_pitch" pos="0 0 0" euler="-0 0 -0" rgba="1 0.4 0.4 1" />
 
         <body name="link_left_hip_roll" pos="0 -0.0405 -0.0589" quat="0.653281 0.653281 0.270598 -0.270598" gravcomp="0">
           <inertial pos="0.00014604 -0.0412348 -0.0101534" quat="0.30122 0.638429 -0.639374 0.304757" mass="0.285622" diaginertia="0.000612958 0.000557294 0.000275288"/>
-          <joint name="left_hip_roll_joint" type="hinge" pos="0 0 0" axis="0 0 1" damping="1" range="-0.8 2.3" />
+          <joint name="left_hip_roll_joint" type="hinge" pos="0 0 0" axis="0 0 -1" damping="1" range="-2.3 0.8" />
           <geom type="mesh" mesh="mesh_left_hip_roll" pos="0 0 0" euler="-0 0 -0" rgba="1 1 0.4 1" />
 
           <body name="link_left_hip_yaw" pos="0 -0.0838049 -0.0406" quat="0.707107 0.707107 0 0" gravcomp="0">
             <inertial pos="-0.00212295 -3.062e-05 0.0916484" quat="0.999467 0.000387515 -0.0324521 -0.0035558" mass="2.73696" diaginertia="0.0127474 0.0124495 0.00338744"/>
-            <joint name="left_hip_yaw_joint" type="hinge" pos="0 0 0" axis="0 0 1" damping="1" range="-3.14 3.14" />
+            <joint name="left_hip_yaw_joint" type="hinge" pos="0 0 0" axis="0 0 -1" damping="1" range="-3.14 3.14" />
             <geom type="mesh" mesh="mesh_left_hip_yaw" pos="0 0 0" euler="-0 0 -0" rgba="0.4 1 0.4 1" />
 
             <body name="link_left_knee_pitch" pos="-0.0337 0 0.1422" quat="0.5 -0.5 0.5 -0.5" gravcomp="0">
@@ -210,7 +210,7 @@
 
                 <body name="link_left_ankle_roll" pos="0 0 0" quat="0.707107 0 0.707107 0" gravcomp="0">
                   <inertial pos="0.00017156 -0.025247 -0.00019936" quat="0.707585 0.0111979 -0.0139853 0.706401" mass="0.589712" diaginertia="0.00190069 0.00152114 0.000541391"/>
-                  <joint name="left_ankle_roll_joint" type="hinge" pos="0 0 0" axis="0 0 -1" damping="1" range="-1.0 1.0" />
+                  <joint name="left_ankle_roll_joint" type="hinge" pos="0 0 0" axis="0 0 1" damping="1" range="-1.0 1.0" />
                   <geom type="mesh" mesh="mesh_left_ankle_roll" pos="0 0 0" euler="-0 0 -0" rgba="1 0.5 1 1" />
                   <geom type = "sphere" size = "0.002" pos = "0.03 -0.0408 0.07" class = "collision" />
                   <geom type = "sphere" size = "0.002" pos = "-0.03 -0.0408 0.07" class = "collision" />
