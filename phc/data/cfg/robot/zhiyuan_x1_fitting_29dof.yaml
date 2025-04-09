@@ -47,7 +47,7 @@ asset:
 extend_config:
   - joint_name: "head_link"
     parent_name: "link_lumbar_pitch"
-    pos: [0.0, 0.0, 0.4]
+    pos: [0.0, 0.0, 1.4]
     rot: [1.0, 0.0, 0.0, 0.0]
   # - joint_name: "left_toe_link"
   #   parent_name: "left_ankle_roll_link"
