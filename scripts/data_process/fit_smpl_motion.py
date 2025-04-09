@@ -211,8 +211,11 @@ def main(cfg : DictConfig) -> None:
     key_name_to_pkls = {"0-" + "_".join(data_path.split("/")[split_len:]).replace(".npz", ""): data_path for data_path in all_pkls}
     key_names = ["0-" + "_".join(data_path.split("/")[split_len:]).replace(".npz", "") for data_path in all_pkls]
     if not cfg.get("fit_all", False):
-        key_names = ["0-Transitions_mocap_mazen_c3d_dance_stand_poses"]
-    
+        # key_names = ["0-Transitions_mocap_mazen_c3d_dance_stand_poses"]
+        key_names = ["0-Transitions_mocap_mazen_c3d_turntwist_stand_poses"]
+        # key_names = ["0-CMU_79_79_29_poses"]
+        #human2humanoid/data/AMASS/AMASS_Complete/Transitions_mocap/mazen_c3d/turntwist_stand_poses.npz
+  
     from multiprocessing import Pool
     jobs = key_names
     num_jobs = 30
