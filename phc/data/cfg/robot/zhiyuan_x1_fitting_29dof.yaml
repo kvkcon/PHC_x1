@@ -23,7 +23,7 @@ real_weight: True
 real_weight_porpotion_capsules: True
 real_weight_porpotion_boxes: True
 
-body_names: ['world', 'x1-body', 'link_lumbar_yaw', 'link_lumbar_roll', 'link_lumbar_pitch', 'link_left_shoulder_pitch', 'link_left_shoulder_roll', 'link_left_shoulder_yaw', 'link_left_elbow_pitch', 'link_left_elbow_yaw', 'link_left_wrist_pitch', 'link_left_wrist_roll', 'link_right_shoulder_pitch', 'link_right_shoulder_roll', 'link_right_shoulder_yaw', 'link_right_elbow_pitch', 'link_right_elbow_yaw', 'link_right_wrist_pitch', 'link_right_wrist_roll', 'link_left_hip_pitch', 'link_left_hip_roll', 'link_left_hip_yaw', 'link_left_knee_pitch', 'link_left_ankle_pitch', 'link_left_ankle_roll', 'link_right_hip_pitch', 'link_right_hip_roll', 'link_right_hip_yaw', 'link_right_knee_pitch', 'link_right_ankle_pitch', 'link_right_ankle_roll']
+body_names: ['x1-body', 'link_lumbar_yaw', 'link_lumbar_roll', 'link_lumbar_pitch', 'link_left_shoulder_pitch', 'link_left_shoulder_roll', 'link_left_shoulder_yaw', 'link_left_elbow_pitch', 'link_left_elbow_yaw', 'link_left_wrist_pitch', 'link_left_wrist_roll', 'link_right_shoulder_pitch', 'link_right_shoulder_roll', 'link_right_shoulder_yaw', 'link_right_elbow_pitch', 'link_right_elbow_yaw', 'link_right_wrist_pitch', 'link_right_wrist_roll', 'link_left_hip_pitch', 'link_left_hip_roll', 'link_left_hip_yaw', 'link_left_knee_pitch', 'link_left_ankle_pitch', 'link_left_ankle_roll', 'link_right_hip_pitch', 'link_right_hip_roll', 'link_right_hip_yaw', 'link_right_knee_pitch', 'link_right_ankle_pitch', 'link_right_ankle_roll']
 
 limb_weight_group:
   - ['left_hip_pitch', 'left_hip_roll', 'left_hip_yaw', 'left_knee_pitch', 'left_ankle_pitch', 'left_ankle_roll', 'leg_l_toe_a_link', 'leg_l_toe_a_ball', 'leg_l_toe_a_loop', 'leg_l_toe_b_link', 'leg_l_toe_b_ball', 'leg_l_toe_b_loop']
@@ -33,7 +33,7 @@ limb_weight_group:
   - ['right_shoulder_pitch', 'right_shoulder_roll', 'right_shoulder_yaw', 'right_elbow_pitch', 'right_elbow_yaw', 'right_wrist_pitch', 'arm_r_wrist_a_ball', 'arm_r_wrist_motor_a_link', 'arm_r_wrist_a_loop', 'arm_r_wrist_b_ball', 'arm_r_wrist_motor_b_link', 'arm_r_wrist_b_loop']
   # - ['waist_motor_a_link', 'waist_motor_a_ball', 'waist_motor_a_loop', 'waist_motor_b_link', 'waist_motor_b_ball', 'waist_motor_b_loop']
 
-dof_names: ['floating_base', 'lumbar_yaw_joint', 'lumbar_roll_joint', 'lumbar_pitch_joint', 'left_shoulder_pitch_joint', 'left_shoulder_roll_joint', 'left_shoulder_yaw_joint', 'left_elbow_pitch_joint', 'left_elbow_yaw_joint', 'left_wrist_pitch_joint', 'left_wrist_roll_joint', 'right_shoulder_pitch_joint', 'right_shoulder_roll_joint', 'right_shoulder_yaw_joint', 'right_elbow_pitch_joint', 'right_elbow_yaw_joint', 'right_wrist_pitch_joint', 'right_wrist_roll_joint', 'left_hip_pitch_joint', 'left_hip_roll_joint', 'left_hip_yaw_joint', 'left_knee_pitch_joint', 'left_ankle_pitch_joint', 'left_ankle_roll_joint', 'right_hip_pitch_joint', 'right_hip_roll_joint', 'right_hip_yaw_joint', 'right_knee_pitch_joint', 'right_ankle_pitch_joint', 'right_ankle_roll_joint']
+dof_names: ['lumbar_yaw_joint', 'lumbar_roll_joint', 'lumbar_pitch_joint', 'left_shoulder_pitch_joint', 'left_shoulder_roll_joint', 'left_shoulder_yaw_joint', 'left_elbow_pitch_joint', 'left_elbow_yaw_joint', 'left_wrist_pitch_joint', 'left_wrist_roll_joint', 'right_shoulder_pitch_joint', 'right_shoulder_roll_joint', 'right_shoulder_yaw_joint', 'right_elbow_pitch_joint', 'right_elbow_yaw_joint', 'right_wrist_pitch_joint', 'right_wrist_roll_joint', 'left_hip_pitch_joint', 'left_hip_roll_joint', 'left_hip_yaw_joint', 'left_knee_pitch_joint', 'left_ankle_pitch_joint', 'left_ankle_roll_joint', 'right_hip_pitch_joint', 'right_hip_roll_joint', 'right_hip_yaw_joint', 'right_knee_pitch_joint', 'right_ankle_pitch_joint', 'right_ankle_roll_joint']
 # ['lumber_yaw_joint', 'lumber_roll_joint', 'lumber_pitch_joint', 'left_shoulder_pitch_joint', 'left_shoulder_roll_joint', 'left_shoulder_yaw_joint', 'left_elbow_pitch_joint', 'left_elbow_yaw_joint', 'right_shoulder_pitch_joint', 'right_shoulder_roll_joint', 'right_shoulder_yaw_joint', 'right_elbow_pitch_joint', 'right_elbow_yaw_joint', 'left_hip_pitch_joint', 'left_hip_roll_joint', 'left_hip_yaw_joint', 'left_knee_pitch_joint', 'left_ankle_pitch_joint', 'left_ankle_roll_joint', 'right_hip_pitch_joint', 'right_hip_roll_joint', 'right_hip_yaw_joint', 'right_knee_pitch_joint', 'right_ankle_pitch_joint', 'right_ankle_roll_joint']
 
 right_foot_name: 'r_foot_roll'
@@ -80,7 +80,7 @@ joint_matches:
 
 smpl_pose_modifier:
   - Pelvis: "[np.pi/2, 0, np.pi/2]"
-  - L_Shoulder: "[0, 0, -np.pi/2]"
-  - R_Shoulder: "[0, 0, np.pi/2]"
-  - L_Elbow: "[0, -np.pi/2, 0]"
-  - R_Elbow: "[0, np.pi/2, 0]"
+  # - L_Shoulder: "[0, 0, -np.pi/2]"
+  # - R_Shoulder: "[0, 0, np.pi/2]"
+  # - L_Elbow: "[0, -np.pi/2, 0]"
+  # - R_Elbow: "[0, np.pi/2, 0]"
