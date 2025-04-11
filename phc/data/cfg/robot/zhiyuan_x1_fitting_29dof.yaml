@@ -58,10 +58,10 @@ extend_config:
   #   pos: [0.08, 0.0, 0.0]
   #   rot: [1.0, 0.0, 0.0, 0.0]
 
-base_link: "x1-body"
+base_link: "link_lumbar_pitch"
 
 joint_matches:
-  - ["link_lumbar_pitch", "Pelvis"]
+  - ["x1-body", "Pelvis"]
   - ["link_left_hip_roll", "L_Hip"]
   - ["link_left_knee_pitch", "L_Knee"]
   - ["link_left_ankle_roll", "L_Ankle"]
