@@ -151,7 +151,7 @@ def process_motion(key_names, key_name_to_pkls, cfg):
             dumped_file = f"data/{cfg.robot.humanoid_type}/v1/singles/debug/{data_key}_{iteration}.pkl"
             if os.path.exists(dumped_file):
                 os.remove(dumped_file)
-                joblib.dump(debug_data, dumped_file)
+            joblib.dump(debug_data, dumped_file)
             
             
             if num_augment_joint > 0:
