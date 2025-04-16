@@ -114,7 +114,7 @@ def process_motion(key_names, key_name_to_pkls, cfg):
 
         
         for iteration in range(cfg.get("fitting_iterations", 500)):
-            print(f"iteration: {iteration}")
+            # print(f"iteration: {iteration}")
             # print(f"root_pos_offset: {root_pos_offset}")
             # print(f"root_rot_new.shape: {root_rot_new.shape}")
             # print(f"root_rot_new: {root_rot_new}")
@@ -122,36 +122,36 @@ def process_motion(key_names, key_name_to_pkls, cfg):
             # print(f"humanoid_fk.dof_axis: {humanoid_fk.dof_axis}")
             # print(f"dof_pos_new.shape: {dof_pos_new.shape}")
             # print(f"dof_pos_new: {dof_pos_new}")
-            print(f"N: {N}")
-            print(f"num_augment_joint: {num_augment_joint}")
+            # print(f"N: {N}")
+            # print(f"num_augment_joint: {num_augment_joint}")
             pose_aa_h1_new = torch.cat([root_rot_new[None, :, None], humanoid_fk.dof_axis * dof_pos_new, torch.zeros((1, N, num_augment_joint, 3)).to(device)], axis = 2)
             
-            print(f"pose_aa_h1_new.shape: {pose_aa_h1_new.shape}")
-            print(f"pose_aa_h1_new: {pose_aa_h1_new}")
-            print(f"root_trans_offset.shape: {root_trans_offset.shape}")                        
-            print(f"root_trans_offset: {root_trans_offset}")
-            print(f"root_pos_offset.shape: {root_pos_offset.shape}")
-            print(f"root_pos_offset: {root_pos_offset}")
+            # print(f"pose_aa_h1_new.shape: {pose_aa_h1_new.shape}")
+            # print(f"pose_aa_h1_new: {pose_aa_h1_new}")
+            # print(f"root_trans_offset.shape: {root_trans_offset.shape}")                        
+            # print(f"root_trans_offset: {root_trans_offset}")
+            # print(f"root_pos_offset.shape: {root_pos_offset.shape}")
+            # print(f"root_pos_offset: {root_pos_offset}")
             fk_return = humanoid_fk.fk_batch(pose_aa_h1_new, root_trans_offset[None, ] + root_pos_offset )
-            print(f"fk_return.global_translation.shape: {fk_return.global_translation.shape}")
-            # record humanoid_fk.fk_batch inputs and outputs and iteration into pkl
-            debug_data = {}
-            debug_data["iteration"] = iteration
-            debug_data["pose_aa_h1_new"] = pose_aa_h1_new.squeeze().detach().numpy()
-            debug_data["root_trans_offset"] = root_trans_offset.squeeze().detach().numpy()
-            debug_data["root_pos_offset"] = root_pos_offset.squeeze().detach().numpy()
-            for key, value in fk_return.items():
-                if isinstance(value, torch.Tensor):
-                    debug_data[f"fk_return_{key}"] = value.squeeze().detach().numpy()
-                else:
-                    debug_data[f"fk_return_{key}"] = value
+            # print(f"fk_return.global_translation.shape: {fk_return.global_translation.shape}")
+            # # record humanoid_fk.fk_batch inputs and outputs and iteration into pkl
+            # debug_data = {}
+            # debug_data["iteration"] = iteration
+            # debug_data["pose_aa_h1_new"] = pose_aa_h1_new.squeeze().detach().numpy()
+            # debug_data["root_trans_offset"] = root_trans_offset.squeeze().detach().numpy()
+            # debug_data["root_pos_offset"] = root_pos_offset.squeeze().detach().numpy()
+            # for key, value in fk_return.items():
+            #     if isinstance(value, torch.Tensor):
+            #         debug_data[f"fk_return_{key}"] = value.squeeze().detach().numpy()
+            #     else:
+            #         debug_data[f"fk_return_{key}"] = value
 
-            data_key = "20250414"
-            os.makedirs(f"data/{cfg.robot.humanoid_type}/v1/singles/debug", exist_ok=True)
-            dumped_file = f"data/{cfg.robot.humanoid_type}/v1/singles/debug/{data_key}_{iteration}.pkl"
-            if os.path.exists(dumped_file):
-                os.remove(dumped_file)
-            joblib.dump(debug_data, dumped_file)
+            # data_key = "20250414"
+            # os.makedirs(f"data/{cfg.robot.humanoid_type}/v1/singles/debug", exist_ok=True)
+            # dumped_file = f"data/{cfg.robot.humanoid_type}/v1/singles/debug/{data_key}_{iteration}.pkl"
+            # if os.path.exists(dumped_file):
+            #     os.remove(dumped_file)
+            # joblib.dump(debug_data, dumped_file)
             
             
             if num_augment_joint > 0:
