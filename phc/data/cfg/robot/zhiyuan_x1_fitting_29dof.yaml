@@ -6,7 +6,7 @@ has_jt_limit: False
 has_dof_subset: True
 has_upright_start: True
 has_smpl_pd_offset: False
-remove_toe: False  # For humanoid's geom toe
+remove_toe: False # For humanoid's geom toe
 motion_sym_loss: False
 sym_loss_coef: 1
 big_ankle: True
@@ -46,8 +46,8 @@ asset:
 
 extend_config:
   - joint_name: "head_link"
-    parent_name: "link_lumbar_pitch"
-    pos: [0.0, 0.0, 1.4]
+    parent_name: "x1-body"
+    pos: [0.0, 0.0, 0.4]
     rot: [1.0, 0.0, 0.0, 0.0]
   # - joint_name: "left_toe_link"
   #   parent_name: "left_ankle_roll_link"
