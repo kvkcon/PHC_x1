@@ -67,9 +67,9 @@ class Humanoid_Batch:
         
         # Build dof_axis array based on motors (actuated joints)
         self.dof_axis = []
-        for motor_joint in motors:
-            if motor_joint in joint_to_axis:
-                self.dof_axis.append(joint_to_axis[motor_joint])
+        for dof_axis_k, dof_axis_v in joint_to_axis:
+            if dof_axis_k in motors:
+                self.dof_axis.append(dof_axis_v)
         
         self.dof_axis = torch.tensor(self.dof_axis)
 
