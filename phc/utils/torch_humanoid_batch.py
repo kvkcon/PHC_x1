@@ -67,7 +67,7 @@ class Humanoid_Batch:
         
         # Build dof_axis array based on motors (actuated joints)
         self.dof_axis = []
-        for dof_axis_k, dof_axis_v in joint_to_axis:
+        for dof_axis_k, dof_axis_v in joint_to_axis.items():
             if dof_axis_k in motors:
                 self.dof_axis.append(dof_axis_v)
         
