@@ -44,17 +44,8 @@ class Humanoid_Batch:
         motors = sorted([m.attrib['joint'] for m in tree.getroot().find("actuator").findall('.//motor')])
         assert(len(motors) > 0, "No motors found in the mjcf file")
         
-        all_joints = []
-        fixed_joints = []
-        for j in tree.getroot().find("worldbody").findall('.//joint'):
-            joint_name = j.attrib['name']
-            all_joints.append(joint_name)
-            if j.attrib.get('type') == 'fixed':
-                fixed_joints.append(joint_name)
-        
-        self.num_dof = len(motors)  # Should be 23 as per the XML
+        self.num_dof = len(motors)  # Should be 29 as per the XML
         self.num_extend_dof = self.num_dof
-        self.fixed_joints = fixed_joints  # record fixed joints
         
         self.mjcf_data = mjcf_data = self.from_mjcf(self.mjcf_file)
         self.body_names = copy.deepcopy(mjcf_data['node_names'])
@@ -62,22 +53,7 @@ class Humanoid_Batch:
         self.body_names_augment = copy.deepcopy(mjcf_data['node_names'])
         self._offsets = mjcf_data['local_translation'][None, ].to(device)
         self._local_rotation = mjcf_data['local_rotation'][None, ].to(device)
-        
-        self.all_joints_idx = {}
-        for i, name in enumerate(self.body_names):
-            if name in mjcf_data['body_to_joint']:
-                self.all_joints_idx[name] = i
-        
-        # get actuated_joints_idx
-        self.actuated_joints_idx = np.array([self.body_names.index(k) for k, v in mjcf_data['body_to_joint'].items() 
-                                            if v in motors])
-        
-        # get fixed_joints_idx
-        self.fixed_joints_idx = np.array([self.body_names.index(k) for k, v in mjcf_data['body_to_joint'].items() 
-                                        if v in fixed_joints])
-        
-        # create joint_name_to_idx
-        self.joint_name_to_idx = {name: i for i, name in enumerate(self.body_names)}
+        self.actuated_joints_idx = np.array([self.body_names.index(k) for k, v in mjcf_data['body_to_joint'].items()])
         
         # Create a mapping of joint names to their axis information
         joint_to_axis = {}
@@ -107,11 +83,6 @@ class Humanoid_Batch:
         self.num_bodies = len(self.body_names)
         self.num_bodies_augment = len(self.body_names_augment)
         
-        # print   debug code
-        print(f"Total bodies: {self.num_bodies}, Actuated joints: {len(self.actuated_joints_idx)}, Fixed joints: {len(self.fixed_joints_idx)}")
-        print(f"DOF names from config: {cfg.dof_names}")
-        print(f"Actuated joints: {[self.body_names[i] for i in self.actuated_joints_idx]}")
-        print(f"Fixed joints: {[self.body_names[i] for i in self.fixed_joints_idx]}")
 
         self.joints_range = mjcf_data['joints_range'].to(device)
         self._local_rotation_mat = tRot.quaternion_to_matrix(self._local_rotation).float() # w, x, y ,z
