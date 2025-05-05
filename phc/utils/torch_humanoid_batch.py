@@ -263,38 +263,21 @@ class Humanoid_Batch:
         rotations_world = []
 
         expanded_offsets = (self._offsets[:, None].expand(B, seq_len, J, 3).to(device).type(dtype))
-        
-        # create fixed joint rot3*3
-        identity_rot = torch.eye(3, device=device, dtype=dtype).unsqueeze(0).unsqueeze(0).unsqueeze(0)
-        identity_rot = identity_rot.expand(B, seq_len, 1, 3, 3)
+        # print(expanded_offsets.shape, J)
 
         for i in range(J):
             if self._parents[i] == -1:
                 positions_world.append(root_positions)
                 rotations_world.append(root_rotations)
             else:
-                # print(f"i={i}, parent={self._parents[i]}, rotations_world[parent].shape={rotations_world[self._parents[i]].shape}")
-                parent_rot = rotations_world[self._parents[i]]
+                print(f"i={i}, parent={self._parents[i]}, rotations_world[parent].shape={rotations_world[self._parents[i]].shape}")
+                jpos = (torch.matmul(rotations_world[self._parents[i]][:, :, 0], expanded_offsets[:, :, i, :, None]).squeeze(-1) + positions_world[self._parents[i]])
+                rot_mat = torch.matmul(rotations_world[self._parents[i]], torch.matmul(self._local_rotation_mat[:,  (i):(i + 1)], rotations[:, :, (i - 1):i, :]))
+                # rot_mat = torch.matmul(rotations_world[self._parents[i]], rotations[:, :, (i - 1):i, :])
+                # print(rotations[:, :, (i - 1):i, :].shape, self._local_rotation_mat.shape)
                 
-                # 计算位置
-                jpos = (torch.matmul(parent_rot[:, :, 0], expanded_offsets[:, :, i, :, None]).squeeze(-1) + 
-                        positions_world[self._parents[i]])
                 positions_world.append(jpos)
-                
-                # 处理旋转 - 检查是否为固定关节
-                if i in self.fixed_joints_idx:
-                    # 对于固定关节，只传递父节点的旋转
-                    rotations_world.append(parent_rot)
-                else:
-                    # 检查索引是否有效
-                    if i - 1 < rotations.shape[2]:
-                        rot_mat = torch.matmul(parent_rot, 
-                                torch.matmul(self._local_rotation_mat[:,  (i):(i + 1)], 
-                                        rotations[:, :, (i - 1):i, :]))
-                        rotations_world.append(rot_mat)
-                    else:
-                        # 如果索引无效，使用单位旋转
-                        rotations_world.append(identity_rot)
+                rotations_world.append(rot_mat)
         
         positions_world = torch.stack(positions_world, dim=2)
         rotations_world = torch.cat(rotations_world, dim=2)
