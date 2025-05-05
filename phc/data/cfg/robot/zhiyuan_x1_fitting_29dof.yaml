@@ -47,14 +47,14 @@ asset:
 extend_config:
   - joint_name: "head_link"
     parent_name: "x1-body"
-    pos: [0.0, 0.0, 0.4]
+    pos: [0.0, 0.0, 0.58]
     rot: [1.0, 0.0, 0.0, 0.0]
   # - joint_name: "left_toe_link"
-  #   parent_name: "left_ankle_roll_link"
+  #   parent_name: "link_left_ankle_roll"
   #   pos: [0.08, 0.0, 0.0]
   #   rot: [1.0, 0.0, 0.0, 0.0]
   # - joint_name: "right_toe_link"
-  #   parent_name: "right_ankle_roll_link"
+  #   parent_name: "link_right_ankle_roll"
   #   pos: [0.08, 0.0, 0.0]
   #   rot: [1.0, 0.0, 0.0, 0.0]
 
@@ -70,17 +70,17 @@ joint_matches:
   - ["link_right_ankle_roll", "R_Ankle"]
   - ["link_left_shoulder_roll", "L_Shoulder"]
   - ["link_left_elbow_pitch", "L_Elbow"]
-  - ["link_left_wrist_roll", "L_Hand"]
+  - ["link_left_wrist_pitch", "L_Hand"]
   - ["link_right_shoulder_roll", "R_Shoulder"]
   - ["link_right_elbow_pitch", "R_Elbow"]
-  - ["link_right_wrist_roll", "R_Hand"]
+  - ["link_right_wrist_pitch", "R_Hand"]
   - ["head_link", "Head"]
   # - ["left_toe_link", "L_Toe"]
   # - ["right_toe_link", "R_Toe"]
 
 smpl_pose_modifier:
   - Pelvis: "[np.pi/2, 0, np.pi/2]"
-  # - L_Shoulder: "[0, 0, -np.pi/2]"
-  # - R_Shoulder: "[0, 0, np.pi/2]"
+  - L_Shoulder: "[0, 0, -np.pi/2]"
+  - R_Shoulder: "[0, 0, np.pi/2]"
   # - L_Elbow: "[0, -np.pi/2, 0]"
   # - R_Elbow: "[0, np.pi/2, 0]"
