@@ -255,6 +255,10 @@ class Humanoid_Batch:
          -- root_positions: (B, 3) tensor describing the root joint positions.
         Output: joint positions (B, J, 3)
         """
+
+        #print shape of rotations, root_rotations, root_positions
+        print("shape of rotations, root_rotations, root_positions")
+        print(rotations.shape, root_rotations.shape, root_positions.shape)
         
         device, dtype = root_rotations.device, root_rotations.dtype
         B, seq_len = rotations.size()[0:2]
