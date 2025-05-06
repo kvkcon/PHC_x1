@@ -63,9 +63,11 @@ class Humanoid_Batch:
         self._offsets = mjcf_data['local_translation'][None, ].to(device)
         self._local_rotation = mjcf_data['local_rotation'][None, ].to(device)
         
+        print(f"mjcf_data['body_to_joint']={mjcf_data['body_to_joint']}")
         self.all_joints_idx = {}
         for i, name in enumerate(self.body_names):
             if name in mjcf_data['body_to_joint']:
+                print(f"Joint {name} found in body_to_joint")
                 self.all_joints_idx[name] = i
         
         # get actuated_joints_idx
@@ -254,46 +256,51 @@ class Humanoid_Batch:
         -- rotations: (B, seq_len, J+1, 3, 3) tensor of rotation matrices for non-root joints
         -- root_rotations: (B, seq_len, 1, 3, 3) tensor of rotation matrices for the root joint
         -- root_positions: (B, seq_len, 3) tensor describing the root joint positions
-        Output: joint positions (B, seq_len, N, 3) and rotations (B, seq_len, N, 3, 3)
+        Output: joint positions (B, seq_len, J, 3) and rotations (B, seq_len, J, 3, 3)
         """
+        
+        print(f"rotations.shape={rotations.shape}, root_rotations.shape={root_rotations.shape}, root_positions.shape={root_positions.shape}")
+        print(f"rotations={rotations}, root_rotations={root_rotations}, root_positions={root_positions}")
+
         device, dtype = root_rotations.device, root_rotations.dtype
         B, seq_len = rotations.size()[0:2]
-        N = self._offsets.shape[1]  # Total number of bodies (30)
+        J = self._offsets.shape[1]
         positions_world = []
         rotations_world = []
 
-        expanded_offsets = self._offsets[:, None].expand(B, seq_len, N, 3).to(device).type(dtype)
+        expanded_offsets = (self._offsets[:, None].expand(B, seq_len, J, 3).to(device).type(dtype))
+        
+        # create fixed joint rot3*3
+        identity_rot = torch.eye(3, device=device, dtype=dtype).unsqueeze(0).unsqueeze(0).unsqueeze(0)
+        identity_rot = identity_rot.expand(B, seq_len, 1, 3, 3)
 
-        # Define indices based on your model
-        self.actuated_body_idx = [0, 1, 2, 3, 4, 5, 6, 10, 11, 12, 13, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30]  # 23 actuated bodies
-        self.fixed_body_idx = [7, 8, 9, 14, 15, 16]  # 6 fixed bodies
-
-        # Mapping from actuated body index to rotations index
-        actuated_to_rot_idx = {idx: i for i, idx in enumerate(self.actuated_body_idx)}
-
-        for i in range(N):
-            if self._parents[i] == -1:  # Root joint (i=0)
+        for i in range(J):
+            if self._parents[i] == -1:
                 positions_world.append(root_positions)
                 rotations_world.append(root_rotations)
             else:
+                print(f"i={i}, parent={self._parents[i]}, rotations_world[parent].shape={rotations_world[self._parents[i]].shape}")
                 parent_rot = rotations_world[self._parents[i]]
                 
-                # Compute position
+                # count pos
                 jpos = (torch.matmul(parent_rot[:, :, 0], expanded_offsets[:, :, i, :, None]).squeeze(-1) + 
                         positions_world[self._parents[i]])
                 positions_world.append(jpos)
                 
-                # Handle rotation
-                if i in self.fixed_body_idx:
-                    # Fixed bodies inherit parent's rotation
+                # handle rot - check whether fixed
+                if i in self.fixed_joints_idx:
+                    # for fixed joint，only using parents' rot
                     rotations_world.append(parent_rot)
-                elif i in self.actuated_body_idx:
-                    # Get the rotation index for this actuated body
-                    rot_idx = actuated_to_rot_idx[i]
-                    rot_mat = torch.matmul(parent_rot, rotations[:, :, rot_idx:rot_idx+1, :, :])
-                    rotations_world.append(rot_mat)
                 else:
-                    raise ValueError(f"Body {i} is neither fixed nor actuated.")
+                    # check whether index valid
+                    if i - 1 < rotations.shape[2]:
+                        rot_mat = torch.matmul(parent_rot, 
+                                torch.matmul(self._local_rotation_mat[:,  (i):(i + 1)], 
+                                        rotations[:, :, (i - 1):i, :]))
+                        rotations_world.append(rot_mat)
+                    else:
+                        # using identity_rot if index in invalid
+                        rotations_world.append(identity_rot)
         
         positions_world = torch.stack(positions_world, dim=2)
         rotations_world = torch.cat(rotations_world, dim=2)
