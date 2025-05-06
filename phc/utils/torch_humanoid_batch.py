@@ -39,6 +39,27 @@ class Humanoid_Batch:
         
         parser = XMLParser(remove_blank_text=True)
         tree = parse(BytesIO(open(self.mjcf_file, "rb").read()), parser=parser,)
+
+        # Parse the MJCF file to identify fixed and actuated joints
+        # Get all joints from the model
+        all_joints = []
+        for j in tree.getroot().find("worldbody").findall('.//joint'):
+            joint_type = j.attrib.get("type", "hinge")
+            is_fixed = (joint_type == "fixed")
+            all_joints.append({
+                'name': j.attrib['name'],
+                'fixed': is_fixed
+            })
+        
+        # Map between body indices and joint indices
+        self.body_to_joint_idx = {}
+        self.fixed_joints = set()
+        
+        for i, (body_name, joint_info) in enumerate(zip(self.body_names[1:], all_joints)):  # Skip root
+            if joint_info['fixed']:
+                self.fixed_joints.add(i + 1)  # +1 because we skipped root
+            else:
+                self.body_to_joint_idx[i + 1] = len(self.body_to_joint_idx)
         
         # Get all actuated joints from motors
         motors = sorted([m.attrib['joint'] for m in tree.getroot().find("actuator").findall('.//motor')])
@@ -225,6 +246,7 @@ class Humanoid_Batch:
          -- rotations: (B, J, 4) tensor of unit quaternions describing the local rotations of each joint.
          -- root_positions: (B, 3) tensor describing the root joint positions.
         Output: joint positions (B, J, 3)
+        Modified to handle fixed joints properly
         """
         
         device, dtype = root_rotations.device, root_rotations.dtype
@@ -235,17 +257,42 @@ class Humanoid_Batch:
 
         expanded_offsets = (self._offsets[:, None].expand(B, seq_len, J, 3).to(device).type(dtype))
         # print(expanded_offsets.shape, J)
+        
+        # Create a mapping of actuated joints
+        actuated_indices = set(range(1, rotations.shape[2] + 1))  # Skip root (0)
+        
+        rot_idx = 0  # Separate counter for rotations
 
         for i in range(J):
             if self._parents[i] == -1:
+                # Root joint
                 positions_world.append(root_positions)
                 rotations_world.append(root_rotations)
             else:
                 print(f"i={i}, parent={self._parents[i]}, rotations_world[parent].shape={rotations_world[self._parents[i]].shape}")
-                jpos = (torch.matmul(rotations_world[self._parents[i]][:, :, 0], expanded_offsets[:, :, i, :, None]).squeeze(-1) + positions_world[self._parents[i]])
-                rot_mat = torch.matmul(rotations_world[self._parents[i]], torch.matmul(self._local_rotation_mat[:,  (i):(i + 1)], rotations[:, :, (i - 1):i, :]))
-                # rot_mat = torch.matmul(rotations_world[self._parents[i]], rotations[:, :, (i - 1):i, :])
-                # print(rotations[:, :, (i - 1):i, :].shape, self._local_rotation_mat.shape)
+                parent_rot = rotations_world[self._parents[i]]
+                parent_pos = positions_world[self._parents[i]]
+                
+                # Apply parent's rotation to the offset
+                jpos = (torch.matmul(parent_rot, expanded_offsets[:, :, i, :, None]).squeeze(-1) + parent_pos)
+                
+                # Check if this is an actuated joint
+                if i in actuated_indices:
+                    # Apply both the local fixed rotation and the joint's rotation
+                    rot_mat = torch.matmul(
+                        parent_rot, 
+                        torch.matmul(
+                            self._local_rotation_mat[:, i:i+1], 
+                            rotations[:, :, rot_idx:rot_idx+1, :]
+                        )
+                    )
+                    rot_idx += 1
+                else:
+                    # For fixed joints, only apply the local fixed rotation
+                    rot_mat = torch.matmul(
+                        parent_rot,
+                        self._local_rotation_mat[:, i:i+1]
+                    )
                 
                 positions_world.append(jpos)
                 rotations_world.append(rot_mat)
