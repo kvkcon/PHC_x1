@@ -62,21 +62,24 @@ class Humanoid_Batch:
         self.body_names_augment = copy.deepcopy(mjcf_data['node_names'])
         self._offsets = mjcf_data['local_translation'][None, ].to(device)
         self._local_rotation = mjcf_data['local_rotation'][None, ].to(device)
-        
+                
+        # get actuated_joints_idx
         print(f"mjcf_data['body_to_joint']={mjcf_data['body_to_joint']}")
         self.all_joints_idx = {}
+        self.fixed_joints_idx = {}
         for i, name in enumerate(self.body_names):
             if name in mjcf_data['body_to_joint']:
-                print(f"Joint {name} found in body_to_joint")
-                self.all_joints_idx[name] = i
+                # print(f"Joint {name} found in body_to_joint")
+                self.actuated_joints_idx[name] = i
+            else:
+                print(f"Joint {name} not found in body_to_joint")
+                self.fixed_joints[name] = i
+        # self.actuated_joints_idx = np.array([self.body_names.index(k) for k, v in mjcf_data['body_to_joint'].items() 
+        #                                     if v in motors])
         
-        # get actuated_joints_idx
-        self.actuated_joints_idx = np.array([self.body_names.index(k) for k, v in mjcf_data['body_to_joint'].items() 
-                                            if v in motors])
-        
-        # get fixed_joints_idx
-        self.fixed_joints_idx = np.array([self.body_names.index(k) for k, v in mjcf_data['body_to_joint'].items() 
-                                        if v in fixed_joints])
+        # # get fixed_joints_idx
+        # self.fixed_joints_idx = np.array([self.body_names.index(k) for k, v in mjcf_data['body_to_joint'].items() 
+        #                                 if v in fixed_joints])
         
         # create joint_name_to_idx
         self.joint_name_to_idx = {name: i for i, name in enumerate(self.body_names)}
