@@ -265,8 +265,8 @@ class Humanoid_Batch:
         expanded_offsets = self._offsets[:, None].expand(B, seq_len, N, 3).to(device).type(dtype)
 
         # Define indices based on your model
-        self.actuated_body_idx = [0, 1, 2, 3, 4, 5, 6, 7, 11, 12, 13, 14, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30]  # 23 actuated bodies
-        self.fixed_body_idx = [8, 9, 10, 15, 16, 17]  # 6 fixed bodies
+        self.actuated_body_idx = [0, 1, 2, 3, 4, 5, 6, 10, 11, 12, 13, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30]  # 23 actuated bodies
+        self.fixed_body_idx = [7, 8, 9, 14, 15, 16]  # 6 fixed bodies
 
         # Mapping from actuated body index to rotations index
         actuated_to_rot_idx = {idx: i for i, idx in enumerate(self.actuated_body_idx)}
