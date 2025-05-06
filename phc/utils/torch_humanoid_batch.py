@@ -250,15 +250,12 @@ class Humanoid_Batch:
     def forward_kinematics_batch(self, rotations, root_rotations, root_positions):
         """
         Perform forward kinematics using the given trajectory and local rotations.
-        Arguments (where B = batch size, J = number of joints):
-         -- rotations: (B, J, 4) tensor of unit quaternions describing the local rotations of each joint.
-         -- root_positions: (B, 3) tensor describing the root joint positions.
-        Output: joint positions (B, J, 3)
+        Arguments (where B = batch size, J = number of actuated joints):
+        -- rotations: (B, seq_len, J+1, 3, 3) tensor of rotation matrices for non-root joints
+        -- root_rotations: (B, seq_len, 1, 3, 3) tensor of rotation matrices for the root joint
+        -- root_positions: (B, seq_len, 3) tensor describing the root joint positions
+        Output: joint positions (B, seq_len, J, 3) and rotations (B, seq_len, J, 3, 3)
         """
-
-        #print shape of rotations, root_rotations, root_positions
-        print("shape of rotations, root_rotations, root_positions")
-        print(rotations.shape, root_rotations.shape, root_positions.shape)
         
         device, dtype = root_rotations.device, root_rotations.dtype
         B, seq_len = rotations.size()[0:2]
@@ -277,7 +274,7 @@ class Humanoid_Batch:
                 positions_world.append(root_positions)
                 rotations_world.append(root_rotations)
             else:
-                # print(f"i={i}, parent={self._parents[i]}, rotations_world[parent].shape={rotations_world[self._parents[i]].shape}")
+                print(f"i={i}, parent={self._parents[i]}, rotations_world[parent].shape={rotations_world[self._parents[i]].shape}")
                 parent_rot = rotations_world[self._parents[i]]
                 
                 # count pos
