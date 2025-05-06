@@ -39,6 +39,22 @@ class Humanoid_Batch:
         
         parser = XMLParser(remove_blank_text=True)
         tree = parse(BytesIO(open(self.mjcf_file, "rb").read()), parser=parser,)
+        
+        # Get all actuated joints from motors
+        motors = sorted([m.attrib['joint'] for m in tree.getroot().find("actuator").findall('.//motor')])
+        assert(len(motors) > 0, "No motors found in the mjcf file")
+        
+        self.num_dof = len(motors)  # Should be 29 as per the XML
+        self.num_extend_dof = self.num_dof
+        
+        self.mjcf_data = mjcf_data = self.from_mjcf(self.mjcf_file)
+        self.body_names = copy.deepcopy(mjcf_data['node_names'])
+        self._parents = mjcf_data['parent_indices']
+        self.body_names_augment = copy.deepcopy(mjcf_data['node_names'])
+        self._offsets = mjcf_data['local_translation'][None, ].to(device)
+        self._local_rotation = mjcf_data['local_rotation'][None, ].to(device)
+        self.actuated_joints_idx = np.array([self.body_names.index(k) for k, v in mjcf_data['body_to_joint'].items()])
+
 
         # Parse the MJCF file to identify fixed and actuated joints
         # Get all joints from the model
@@ -60,21 +76,7 @@ class Humanoid_Batch:
                 self.fixed_joints.add(i + 1)  # +1 because we skipped root
             else:
                 self.body_to_joint_idx[i + 1] = len(self.body_to_joint_idx)
-        
-        # Get all actuated joints from motors
-        motors = sorted([m.attrib['joint'] for m in tree.getroot().find("actuator").findall('.//motor')])
-        assert(len(motors) > 0, "No motors found in the mjcf file")
-        
-        self.num_dof = len(motors)  # Should be 29 as per the XML
-        self.num_extend_dof = self.num_dof
-        
-        self.mjcf_data = mjcf_data = self.from_mjcf(self.mjcf_file)
-        self.body_names = copy.deepcopy(mjcf_data['node_names'])
-        self._parents = mjcf_data['parent_indices']
-        self.body_names_augment = copy.deepcopy(mjcf_data['node_names'])
-        self._offsets = mjcf_data['local_translation'][None, ].to(device)
-        self._local_rotation = mjcf_data['local_rotation'][None, ].to(device)
-        self.actuated_joints_idx = np.array([self.body_names.index(k) for k, v in mjcf_data['body_to_joint'].items()])
+                
         
         # Create a mapping of joint names to their axis information
         joint_to_axis = {}
