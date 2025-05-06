@@ -257,6 +257,9 @@ class Humanoid_Batch:
         Output: joint positions (B, seq_len, J, 3) and rotations (B, seq_len, J, 3, 3)
         """
         
+        print(f"rotations.shape={rotations.shape}, root_rotations.shape={root_rotations.shape}, root_positions.shape={root_positions.shape}")
+        print(f"rotations={rotations}, root_rotations={root_rotations}, root_positions={root_positions}")
+
         device, dtype = root_rotations.device, root_rotations.dtype
         B, seq_len = rotations.size()[0:2]
         J = self._offsets.shape[1]
@@ -284,7 +287,7 @@ class Humanoid_Batch:
                 
                 # handle rot - check whether fixed
                 if i in self.fixed_joints_idx:
-                    # for fixed joint，only using parents' rpt
+                    # for fixed joint，only using parents' rot
                     rotations_world.append(parent_rot)
                 else:
                     # check whether index valid
