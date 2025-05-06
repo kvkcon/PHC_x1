@@ -44,8 +44,17 @@ class Humanoid_Batch:
         motors = sorted([m.attrib['joint'] for m in tree.getroot().find("actuator").findall('.//motor')])
         assert(len(motors) > 0, "No motors found in the mjcf file")
         
-        self.num_dof = len(motors)  # Should be 29 as per the XML
+        all_joints = []
+        fixed_joints = []
+        for j in tree.getroot().find("worldbody").findall('.//joint'):
+            joint_name = j.attrib['name']
+            all_joints.append(joint_name)
+            if j.attrib.get('type') == 'fixed':
+                fixed_joints.append(joint_name)
+        
+        self.num_dof = len(motors)  # Should be 23 as per the XML
         self.num_extend_dof = self.num_dof
+        self.fixed_joints = fixed_joints  # record fixed joints
         
         self.mjcf_data = mjcf_data = self.from_mjcf(self.mjcf_file)
         self.body_names = copy.deepcopy(mjcf_data['node_names'])
@@ -53,24 +62,22 @@ class Humanoid_Batch:
         self.body_names_augment = copy.deepcopy(mjcf_data['node_names'])
         self._offsets = mjcf_data['local_translation'][None, ].to(device)
         self._local_rotation = mjcf_data['local_rotation'][None, ].to(device)
-        # self.actuated_joints_idx = np.array([self.body_names.index(k) for k, v in mjcf_data['body_to_joint'].items()])
-
-
-        # Parse the MJCF file to identify fixed and actuated joints
-        # Create a mapping from body names to the corresponding joint names
-        body_to_joint = OrderedDict()
-        for body in tree.getroot().find("worldbody").findall('.//body'):
-            for joint in body.findall("joint"):
-                joint_type = joint.attrib.get("type", "hinge")
-                if joint_type != "fixed":
-                    body_to_joint[body.attrib.get("name")] = joint.attrib.get("name")
         
-        # Create a list of body indices that have actuated joints
-        self.actuated_joints_idx = []
-        for i, body_name in enumerate(self.body_names):
-            if body_name in body_to_joint and body_to_joint[body_name] in motors:
-                self.actuated_joints_idx.append(i)
-
+        self.all_joints_idx = {}
+        for i, name in enumerate(self.body_names):
+            if name in mjcf_data['body_to_joint']:
+                self.all_joints_idx[name] = i
+        
+        # get actuated_joints_idx
+        self.actuated_joints_idx = np.array([self.body_names.index(k) for k, v in mjcf_data['body_to_joint'].items() 
+                                            if v in motors])
+        
+        # get fixed_joints_idx
+        self.fixed_joints_idx = np.array([self.body_names.index(k) for k, v in mjcf_data['body_to_joint'].items() 
+                                        if v in fixed_joints])
+        
+        # create joint_name_to_idx
+        self.joint_name_to_idx = {name: i for i, name in enumerate(self.body_names)}
         
         # Create a mapping of joint names to their axis information
         joint_to_axis = {}
@@ -100,6 +107,11 @@ class Humanoid_Batch:
         self.num_bodies = len(self.body_names)
         self.num_bodies_augment = len(self.body_names_augment)
         
+        # print   debug code
+        print(f"Total bodies: {self.num_bodies}, Actuated joints: {len(self.actuated_joints_idx)}, Fixed joints: {len(self.fixed_joints_idx)}")
+        print(f"DOF names from config: {cfg.dof_names}")
+        print(f"Actuated joints: {[self.body_names[i] for i in self.actuated_joints_idx]}")
+        print(f"Fixed joints: {[self.body_names[i] for i in self.fixed_joints_idx]}")
 
         self.joints_range = mjcf_data['joints_range'].to(device)
         self._local_rotation_mat = tRot.quaternion_to_matrix(self._local_rotation).float() # w, x, y ,z
@@ -239,11 +251,11 @@ class Humanoid_Batch:
         """
         Perform forward kinematics using the given trajectory and local rotations.
         Arguments (where B = batch size, J = number of joints):
-        -- rotations: (B, seq_len, J-1, 3, 3) tensor of rotation matrices for non-root joints
-        -- root_rotations: (B, seq_len, 1, 3, 3) tensor of rotation matrices for the root joint
-        -- root_positions: (B, seq_len, 3) tensor describing the root joint positions
-        Output: joint positions (B, seq_len, J, 3) and rotations (B, seq_len, J, 3, 3)
+         -- rotations: (B, J, 4) tensor of unit quaternions describing the local rotations of each joint.
+         -- root_positions: (B, 3) tensor describing the root joint positions.
+        Output: joint positions (B, J, 3)
         """
+        
         device, dtype = root_rotations.device, root_rotations.dtype
         B, seq_len = rotations.size()[0:2]
         J = self._offsets.shape[1]
@@ -252,61 +264,39 @@ class Humanoid_Batch:
 
         expanded_offsets = (self._offsets[:, None].expand(B, seq_len, J, 3).to(device).type(dtype))
         
-        # We need to track which joint in 'rotations' corresponds to which body
-        # Since there are fewer actuated joints than bodies
-        rot_idx = 0
+        # create fixed joint rot3*3
+        identity_rot = torch.eye(3, device=device, dtype=dtype).unsqueeze(0).unsqueeze(0).unsqueeze(0)
+        identity_rot = identity_rot.expand(B, seq_len, 1, 3, 3)
 
         for i in range(J):
             if self._parents[i] == -1:
-                # Root joint handling
                 positions_world.append(root_positions)
                 rotations_world.append(root_rotations)
             else:
-                # Get parent rotation and position
+                # print(f"i={i}, parent={self._parents[i]}, rotations_world[parent].shape={rotations_world[self._parents[i]].shape}")
                 parent_rot = rotations_world[self._parents[i]]
-                parent_pos = positions_world[self._parents[i]]
                 
-                # Transform the local offset by parent rotation and add to parent position
-                offset_rotated = torch.matmul(parent_rot, expanded_offsets[:, :, i, :, None])
-                jpos = offset_rotated.squeeze(-1) + parent_pos
-                
-                # Check if this is an actuated joint or a fixed joint
-                is_actuated = False
-                if i > 0:  # Skip root
-                    # Here we need to check if this body has an actuated joint
-                    # This depends on how you determine which bodies have actuated joints
-                    # For simplicity, let's assume actuated_joints_idx contains the body indices
-                    if i-1 < len(self.actuated_joints_idx) and rot_idx < rotations.shape[2]:
-                        is_actuated = True
-                
-                if is_actuated:
-                    # Apply both the local fixed rotation and the actuated joint's rotation
-                    rot_mat = torch.matmul(
-                        parent_rot, 
-                        torch.matmul(
-                            self._local_rotation_mat[:, i:i+1], 
-                            rotations[:, :, rot_idx:rot_idx+1]
-                        )
-                    )
-                    rot_idx += 1
-                else:
-                    # For fixed joints, only apply the local fixed rotation
-                    rot_mat = torch.matmul(
-                        parent_rot,
-                        self._local_rotation_mat[:, i:i+1]
-                    )
-                
+                # count pos
+                jpos = (torch.matmul(parent_rot[:, :, 0], expanded_offsets[:, :, i, :, None]).squeeze(-1) + 
+                        positions_world[self._parents[i]])
                 positions_world.append(jpos)
-                rotations_world.append(rot_mat)
+                
+                # handle rot - check whether fixed
+                if i in self.fixed_joints_idx:
+                    # for fixed joint，only using parents' rpt
+                    rotations_world.append(parent_rot)
+                else:
+                    # check whether index valid
+                    if i - 1 < rotations.shape[2]:
+                        rot_mat = torch.matmul(parent_rot, 
+                                torch.matmul(self._local_rotation_mat[:,  (i):(i + 1)], 
+                                        rotations[:, :, (i - 1):i, :]))
+                        rotations_world.append(rot_mat)
+                    else:
+                        # using identity_rot if index in invalid
+                        rotations_world.append(identity_rot)
         
-        # Make sure all tensors have the same shape before stacking
-        # The error shows positions_world[0] is [1, 1, 3] while positions_world[1] is [1, 1, 1, 3]
-        for i in range(len(positions_world)):
-            if positions_world[i].dim() == 3:  # [B, seq_len, 3]
-                positions_world[i] = positions_world[i].unsqueeze(2)  # Make it [B, seq_len, 1, 3]
-        
-        # Now stack and squeeze appropriately
-        positions_world = torch.cat(positions_world, dim=2)
+        positions_world = torch.stack(positions_world, dim=2)
         rotations_world = torch.cat(rotations_world, dim=2)
         return positions_world, rotations_world
     
