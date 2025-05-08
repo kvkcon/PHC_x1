@@ -62,20 +62,25 @@ class Humanoid_Batch:
         self.body_names_augment = copy.deepcopy(mjcf_data['node_names'])
         self._offsets = mjcf_data['local_translation'][None, ].to(device)
         self._local_rotation = mjcf_data['local_rotation'][None, ].to(device)
+        
+        print("-------------------------body_list----------from PHC_x1\\phc\\utils\\torch_humanoid_batch.py--------------------------------")
+        print(f"self.body_names={self.body_names}")
+        self.body_index_list = np.array([self.body_names.index(name) for name in self.body_names])
+        print(f"self.body_index_list={self.body_index_list}")
+
                 
         # get actuated_joints_idx
         print(f"mjcf_data['body_to_joint']={mjcf_data['body_to_joint']}")
-        self.all_joints_idx = {}
-        self.fixed_joints_idx = {}
+        fixed_joints_idx = {}
         for i, name in enumerate(self.body_names):
-            if name in mjcf_data['body_to_joint']:
-                # print(f"Joint {name} found in body_to_joint")
-                self.actuated_joints_idx[name] = i
-            else:
+            if i==0: continue
+            if name not in mjcf_data['body_to_joint']:
                 print(f"Joint {name} not found in body_to_joint")
-                self.fixed_joints[name] = i
-        # self.actuated_joints_idx = np.array([self.body_names.index(k) for k, v in mjcf_data['body_to_joint'].items() 
-        #                                     if v in motors])
+                fixed_joints_idx[name] = i
+        self.fixed_joints_idx = np.array([self.body_names.index(k) for k,v in fixed_joints_idx.items()])
+        print(f"self.fixed_joints_idx={self.fixed_joints_idx}")
+        self.actuated_joints_idx = np.array([self.body_names.index(k) for k, v in mjcf_data['body_to_joint'].items() 
+                                            if v in motors])
         
         # # get fixed_joints_idx
         # self.fixed_joints_idx = np.array([self.body_names.index(k) for k, v in mjcf_data['body_to_joint'].items() 
@@ -263,11 +268,12 @@ class Humanoid_Batch:
         """
         
         print(f"rotations.shape={rotations.shape}, root_rotations.shape={root_rotations.shape}, root_positions.shape={root_positions.shape}")
-        print(f"rotations={rotations}, root_rotations={root_rotations}, root_positions={root_positions}")
+        # print(f"rotations={rotations}, root_rotations={root_rotations}, root_positions={root_positions}")
 
         device, dtype = root_rotations.device, root_rotations.dtype
         B, seq_len = rotations.size()[0:2]
         J = self._offsets.shape[1]
+        print(f"J={J}, self._offsets.shape={self._offsets.shape}, self._parents.shape={self._parents.shape}")
         positions_world = []
         rotations_world = []
 
@@ -282,7 +288,7 @@ class Humanoid_Batch:
                 positions_world.append(root_positions)
                 rotations_world.append(root_rotations)
             else:
-                print(f"i={i}, parent={self._parents[i]}, rotations_world[parent].shape={rotations_world[self._parents[i]].shape}")
+                # print(f"i={i}, parent={self._parents[i]}, rotations_world[parent].shape={rotations_world[self._parents[i]].shape}")
                 parent_rot = rotations_world[self._parents[i]]
                 
                 # count pos
