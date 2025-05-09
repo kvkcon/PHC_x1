@@ -39,13 +39,22 @@ class Humanoid_Batch:
         
         parser = XMLParser(remove_blank_text=True)
         tree = parse(BytesIO(open(self.mjcf_file, "rb").read()), parser=parser,)
-        self.dof_axis = []
-        joints = sorted([j.attrib['name'] for j in tree.getroot().find("worldbody").findall('.//joint')])
-        motors = sorted([m.attrib['name'] for m in tree.getroot().find("actuator").getchildren()])
+        
+        # Get all actuated joints from motors
+        motors = sorted([m.attrib['joint'] for m in tree.getroot().find("actuator").findall('.//motor')])
         assert(len(motors) > 0, "No motors found in the mjcf file")
         
-        self.num_dof = len(motors) 
+        all_joints = []
+        fixed_joints = []
+        for j in tree.getroot().find("worldbody").findall('.//joint'):
+            joint_name = j.attrib['name']
+            all_joints.append(joint_name)
+            if j.attrib.get('type') == 'fixed':
+                fixed_joints.append(joint_name)
+        
+        self.num_dof = len(motors)  # Should be 23 as per the XML
         self.num_extend_dof = self.num_dof
+        self.fixed_joints = fixed_joints  # record fixed joints
         
         self.mjcf_data = mjcf_data = self.from_mjcf(self.mjcf_file)
         self.body_names = copy.deepcopy(mjcf_data['node_names'])
@@ -53,24 +62,48 @@ class Humanoid_Batch:
         self.body_names_augment = copy.deepcopy(mjcf_data['node_names'])
         self._offsets = mjcf_data['local_translation'][None, ].to(device)
         self._local_rotation = mjcf_data['local_rotation'][None, ].to(device)
-        self.actuated_joints_idx = np.array([self.body_names.index(k) for k, v in mjcf_data['body_to_joint'].items()])
         
-        for m in motors:
-            if not m in joints:
-                print(m)
+        print("-------------------------body_list----------from PHC_x1\\phc\\utils\\torch_humanoid_batch.py--------------------------------")
+        print(f"self.body_names={self.body_names}")
+        self.body_index_list = np.array([self.body_names.index(name) for name in self.body_names])
+        print(f"self.body_index_list={self.body_index_list}")
+
+                
+        # get actuated_joints_idx
+        print(f"mjcf_data['body_to_joint']={mjcf_data['body_to_joint']}")
+        fixed_joints_idx = {}
+        for i, name in enumerate(self.body_names):
+            if i==0: continue
+            if name not in mjcf_data['body_to_joint']:
+                print(f"Joint {name} not found in body_to_joint")
+                fixed_joints_idx[name] = i
+        self.fixed_joints_idx = np.array([self.body_names.index(k) for k,v in fixed_joints_idx.items()])
+        print(f"self.fixed_joints_idx={self.fixed_joints_idx}")
+        self.actuated_joints_idx = np.array([self.body_names.index(k) for k, v in mjcf_data['body_to_joint'].items() 
+                                            if v in motors])
         
-        if "type" in tree.getroot().find("worldbody").findall('.//joint')[0].attrib and tree.getroot().find("worldbody").findall('.//joint')[0].attrib['type'] == "free":
-            for j in tree.getroot().find("worldbody").findall('.//joint')[1:]:
-                self.dof_axis.append([int(i) for i in j.attrib['axis'].split(" ")])
-            self.has_freejoint = True
-        elif not "type" in tree.getroot().find("worldbody").findall('.//joint')[0].attrib:
-            for j in tree.getroot().find("worldbody").findall('.//joint'):
-                self.dof_axis.append([int(i) for i in j.attrib['axis'].split(" ")])
-            self.has_freejoint = True
-        else:
-            for j in tree.getroot().find("worldbody").findall('.//joint')[6:]:
-                self.dof_axis.append([int(i) for i in j.attrib['axis'].split(" ")])
-            self.has_freejoint = False
+        # # get fixed_joints_idx
+        # self.fixed_joints_idx = np.array([self.body_names.index(k) for k, v in mjcf_data['body_to_joint'].items() 
+        #                                 if v in fixed_joints])
+        
+        # create joint_name_to_idx
+        self.joint_name_to_idx = {name: i for i, name in enumerate(self.body_names)}
+        
+        # Create a mapping of joint names to their axis information
+        joint_to_axis = {}
+        for j in tree.getroot().find("worldbody").findall('.//joint'):
+            if 'axis' in j.attrib:
+                joint_to_axis[j.attrib['name']] = [float(i) for i in j.attrib['axis'].split()]
+        
+        # Check if there's a freejoint (floating base)
+        freejoint = tree.getroot().find("worldbody").find('.//freejoint')
+        self.has_freejoint = freejoint is not None
+        
+        # Build dof_axis array based on motors (actuated joints)
+        self.dof_axis = []
+        for dof_axis_k, dof_axis_v in joint_to_axis.items():
+            if dof_axis_k in motors:
+                self.dof_axis.append(dof_axis_v)
         
         self.dof_axis = torch.tensor(self.dof_axis)
 
@@ -84,6 +117,11 @@ class Humanoid_Batch:
         self.num_bodies = len(self.body_names)
         self.num_bodies_augment = len(self.body_names_augment)
         
+        # print   debug code
+        print(f"Total bodies: {self.num_bodies}, Actuated joints: {len(self.actuated_joints_idx)}, Fixed joints: {len(self.fixed_joints_idx)}")
+        print(f"DOF names from config: {cfg.dof_names}")
+        print(f"Actuated joints: {[self.body_names[i] for i in self.actuated_joints_idx]}")
+        print(f"Fixed joints: {[self.body_names[i] for i in self.fixed_joints_idx]}")
 
         self.joints_range = mjcf_data['joints_range'].to(device)
         self._local_rotation_mat = tRot.quaternion_to_matrix(self._local_rotation).float() # w, x, y ,z
@@ -127,17 +165,22 @@ class Humanoid_Batch:
                 all_joints = all_joints[6:]
             
             for joint in all_joints:
+                #check fixed joint
+                joint_type = joint.attrib.get("type", "hinge")
+                if joint_type == "fixed":
+                    continue
+                    
                 if not joint.attrib.get("range") is None: 
                     joints_range.append(np.fromstring(joint.attrib.get("range"), dtype=float, sep=" "))
                 else:
-                    if not joint.attrib.get("type") == "free":
+                    if not joint_type == "free":
                         joints_range.append([-np.pi, np.pi])
+                        
             for joint_node in xml_node.findall("joint"):
                 body_to_joint[node_name] = joint_node.attrib.get("name")
                 
             for next_node in xml_node.findall("body"):
                 node_index = _add_xml_node(next_node, curr_index, node_index)
-
             
             return node_index
         
@@ -217,33 +260,56 @@ class Humanoid_Batch:
     def forward_kinematics_batch(self, rotations, root_rotations, root_positions):
         """
         Perform forward kinematics using the given trajectory and local rotations.
-        Arguments (where B = batch size, J = number of joints):
-         -- rotations: (B, J, 4) tensor of unit quaternions describing the local rotations of each joint.
-         -- root_positions: (B, 3) tensor describing the root joint positions.
-        Output: joint positions (B, J, 3)
+        Arguments (where B = batch size, J = number of actuated joints):
+        -- rotations: (B, seq_len, J+1, 3, 3) tensor of rotation matrices for non-root joints
+        -- root_rotations: (B, seq_len, 1, 3, 3) tensor of rotation matrices for the root joint
+        -- root_positions: (B, seq_len, 3) tensor describing the root joint positions
+        Output: joint positions (B, seq_len, J, 3) and rotations (B, seq_len, J, 3, 3)
         """
         
+        print(f"rotations.shape={rotations.shape}, root_rotations.shape={root_rotations.shape}, root_positions.shape={root_positions.shape}")
+        # print(f"rotations={rotations}, root_rotations={root_rotations}, root_positions={root_positions}")
+
         device, dtype = root_rotations.device, root_rotations.dtype
         B, seq_len = rotations.size()[0:2]
         J = self._offsets.shape[1]
+        print(f"J={J}, self._offsets.shape={self._offsets.shape}, self._parents.shape={self._parents.shape}")
         positions_world = []
         rotations_world = []
 
         expanded_offsets = (self._offsets[:, None].expand(B, seq_len, J, 3).to(device).type(dtype))
-        # print(expanded_offsets.shape, J)
+        
+        # create fixed joint rot3*3
+        identity_rot = torch.eye(3, device=device, dtype=dtype).unsqueeze(0).unsqueeze(0).unsqueeze(0)
+        identity_rot = identity_rot.expand(B, seq_len, 1, 3, 3)
 
         for i in range(J):
             if self._parents[i] == -1:
                 positions_world.append(root_positions)
                 rotations_world.append(root_rotations)
             else:
-                jpos = (torch.matmul(rotations_world[self._parents[i]][:, :, 0], expanded_offsets[:, :, i, :, None]).squeeze(-1) + positions_world[self._parents[i]])
-                rot_mat = torch.matmul(rotations_world[self._parents[i]], torch.matmul(self._local_rotation_mat[:,  (i):(i + 1)], rotations[:, :, (i - 1):i, :]))
-                # rot_mat = torch.matmul(rotations_world[self._parents[i]], rotations[:, :, (i - 1):i, :])
-                # print(rotations[:, :, (i - 1):i, :].shape, self._local_rotation_mat.shape)
+                # print(f"i={i}, parent={self._parents[i]}, rotations_world[parent].shape={rotations_world[self._parents[i]].shape}")
+                parent_rot = rotations_world[self._parents[i]]
                 
+                # count pos
+                jpos = (torch.matmul(parent_rot[:, :, 0], expanded_offsets[:, :, i, :, None]).squeeze(-1) + 
+                        positions_world[self._parents[i]])
                 positions_world.append(jpos)
-                rotations_world.append(rot_mat)
+                
+                # handle rot - check whether fixed
+                if i in self.fixed_joints_idx:
+                    # for fixed joint，only using parents' rot
+                    rotations_world.append(parent_rot)
+                else:
+                    # check whether index valid
+                    if i - 1 < rotations.shape[2]:
+                        rot_mat = torch.matmul(parent_rot, 
+                                torch.matmul(self._local_rotation_mat[:,  (i):(i + 1)], 
+                                        rotations[:, :, (i - 1):i, :]))
+                        rotations_world.append(rot_mat)
+                    else:
+                        # using identity_rot if index in invalid
+                        rotations_world.append(identity_rot)
         
         positions_world = torch.stack(positions_world, dim=2)
         rotations_world = torch.cat(rotations_world, dim=2)

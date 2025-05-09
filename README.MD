@@ -419,6 +419,7 @@ Also consider citing these prior works that are used in this project:
 
 ## References
 This repository is built on top of the following amazing repositories:
+* refer to [ZhengyiLuo/PHC](https://github.com/ZhengyiLuo/PHC)
 * Main code framework is from: [IsaacGymEnvs](https://github.com/NVIDIA-Omniverse/IsaacGymEnvs)
 * Part of the SMPL_robot code is from: [UHC](https://github.com/ZhengyiLuo/UniversalHumanoidControl)
 * SMPL models and layer is from: [SMPL-X model](https://github.com/vchoutas/smplx)
