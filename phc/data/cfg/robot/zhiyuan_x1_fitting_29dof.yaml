@@ -46,7 +46,7 @@ asset:
 
 extend_config:
   - joint_name: "head_link"
-    parent_name: "base_link"
+    parent_name: "x1-body"
     pos: [0.0, 0.0, 0.58]
     rot: [1.0, 0.0, 0.0, 0.0]
   # - joint_name: "left_toe_link"
