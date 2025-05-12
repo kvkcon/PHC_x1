@@ -4,9 +4,9 @@ import os
 from scipy.spatial.transform import Rotation as sRot
 
 # 定义坐标系转换矩阵
-R_cam_to_world = np.array([[0, 0, 1],
-                           [0, 1, 0],
-                           [-1, 0, 0]])
+R_cam_to_world = np.array([[1, 0, 0],
+                           [0, 0, 1],
+                           [0, -1, 0]])
 
 # 检查命令行参数
 if len(sys.argv) != 2:
