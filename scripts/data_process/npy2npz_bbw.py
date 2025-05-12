@@ -3,6 +3,11 @@ import sys
 import os
 from scipy.spatial.transform import Rotation as sRot
 
+# 定义坐标系转换矩阵
+R_cam_to_world = np.array([[0, 0, 1],
+                           [0, 1, 0],
+                           [-1, 0, 0]])
+
 # 检查命令行参数
 if len(sys.argv) != 2:
     print("Usage: python npy2npz_convert.py <video_name>")
@@ -28,10 +33,8 @@ for key in required_keys:
 
 # 转换为 numpy 数组
 pred_rotmat = track_data["pred_rotmat"].numpy()
-trans = track_data["pred_trans"].numpy()
-trans_swapped = trans.copy()
-trans_swapped[..., [0, 2]] = trans_swapped[..., [2, 0]]
-trans = trans_swapped
+trans = track_data["pred_trans"].numpy().squeeze(1)  # [N, 3]
+trans_world = (R_cam_to_world @ trans.T).T  # 转换为世界坐标系
 shape = track_data["pred_shape"].numpy()
 duration = track_data['pred_cam'].shape[0]
 
@@ -55,7 +58,7 @@ for i in range(duration):
 
 # 处理平移和形状
 N = duration
-trans = trans.squeeze(1)
+# trans = trans.squeeze(1)
 betas = shape.mean(axis=0)  # 使用 numpy 的 mean
 
 # 填充缺失数据
@@ -71,7 +74,7 @@ output_path = os.path.join(output_dir, "24dof_transfered.npz")
 # 保存数据
 np.savez_compressed(
     output_path,
-    trans=trans,
+    trans=trans_world,
     gender=gender,
     mocap_framerate=mocap_framerate,
     betas=betas,
