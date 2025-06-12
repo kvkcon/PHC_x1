@@ -62,10 +62,10 @@ extend_config:
 base_link: "torso_link"
 joint_matches:
   - ["pelvis", "Pelvis"]
-  - ["left_hip_pitch_link", "L_Hip"]
+  - ["left_hip_roll_link", "L_Hip"]
   - ["left_knee_link", "L_Knee"]
   - ["left_ankle_roll_link", "L_Ankle"]
-  - ["right_hip_pitch_link", "R_Hip"]
+  - ["right_hip_roll_link", "R_Hip"]
   - ["right_knee_link", "R_Knee"]
   - ["right_ankle_roll_link", "R_Ankle"]
   - ["left_shoulder_roll_link", "L_Shoulder"]

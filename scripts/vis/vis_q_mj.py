@@ -71,14 +71,14 @@ def main(cfg : DictConfig) -> None:
     
     mj_model = mujoco.MjModel.from_xml_path(humanoid_xml)
     mj_data = mujoco.MjData(mj_model)
-    
-    
+
     RECORDING = False
     
     mj_model.opt.timestep = dt
     with mujoco.viewer.launch_passive(mj_model, mj_data, key_callback=key_call_back) as viewer:
         for _ in range(50):
-            add_visual_capsule(viewer.user_scn, np.zeros(3), np.array([0.001, 0, 0]), 0.05, np.array([1, 0, 0, 1]))
+            # add_visual_capsule(viewer.user_scn, np.zeros(3), np.array([0.001, 0, 0]), 0.04, np.array([1, 0, 0, 1]))
+            add_visual_capsule(viewer.user_scn, np.zeros(3), np.array([0.001, 0, 0]), 0.02, np.array([1, 0, 0, 1]))
         # for _ in range(24):
         #     add_visual_capsule(viewer.user_scn, np.zeros(3), np.array([0.001, 0, 0]), 0.05, np.array([0, 1, 0, 1]))
         # Close the viewer automatically after 30 wall-seconds.
@@ -88,8 +88,101 @@ def main(cfg : DictConfig) -> None:
             curr_motion = motion_data[curr_motion_key]
             curr_time = int(time_step/dt) % curr_motion['dof'].shape[0]
             
+                        # 添加打印信息来查看顺序
+            if time_step == 0:  # 只在开始时打印一次
+                print("\n=== Motion Data Info ===")
+                print(f"curr_motion['dof'] shape: {curr_motion['dof'].shape}")
+                print(f"curr_motion['dof'][0]: {curr_motion['dof'][76]}")
+                
+                # 添加motion file中的dof信息
+                if 'dof_names' in curr_motion:
+                    print(f"Motion dof_names: {curr_motion['dof_names']}")
+                else:
+                    print("Motion dof_names: Not available in motion file")
+                    
+                if 'dof_index' in curr_motion:
+                    print(f"Motion dof_index: {curr_motion['dof_index']}")
+                else:
+                    print("Motion dof_index: Not available in motion file")
+                    
+                if 'dof_axis' in curr_motion:
+                    print(f"Motion dof_axis shape: {curr_motion['dof_axis'].shape}")
+                    print(f"Motion dof_axis: {curr_motion['dof_axis']}")
+                else:
+                    print("Motion dof_axis: Not available in motion file")
+                
+                print("\n=== MuJoCo Model Info ===")
+                print(f"mj_model.nq (total qpos): {mj_model.nq}")
+                print(f"mj_model.nv (total qvel): {mj_model.nv}")
+                print(f"mj_model.njnt (number of joints): {mj_model.njnt}")
+                
+                print("\n=== Joint Names and Info ===")
+                for i in range(mj_model.njnt):
+                    joint_name = mujoco.mj_id2name(mj_model, mujoco.mjtObj.mjOBJ_JOINT, i)
+                    joint_type = mj_model.jnt_type[i]
+                    qpos_addr = mj_model.jnt_qposadr[i]
+                    dof_addr = mj_model.jnt_dofadr[i]
+                    print(f"Joint {i}: {joint_name}, type: {joint_type}, qpos_addr: {qpos_addr}, dof_addr: {dof_addr}")
+                
+                print("\n=== DOF Names and Axis ===")
+                for i in range(mj_model.nv):
+                    # 找到对应的joint
+                    joint_id = -1
+                    for j in range(mj_model.njnt):
+                        if mj_model.jnt_dofadr[j] <= i < mj_model.jnt_dofadr[j] + (3 if mj_model.jnt_type[j] == 0 else 1):
+                            joint_id = j
+                            break
+                    
+                    if joint_id >= 0:
+                        joint_name = mujoco.mj_id2name(mj_model, mujoco.mjtObj.mjOBJ_JOINT, joint_id)
+                        # 获取关节轴信息
+                        if hasattr(mj_model, 'jnt_axis') and joint_id < len(mj_model.jnt_axis):
+                            axis = mj_model.jnt_axis[joint_id]
+                        else:
+                            axis = "N/A"
+                        print(f"DOF {i}: joint={joint_name}, axis={axis}")
+                
+                print(f"\nqpos layout:")
+                print(f"qpos[0:3]: root translation")
+                print(f"qpos[3:7]: root rotation (quaternion)")
+                print(f"qpos[7:]: joint DOFs (length: {mj_model.nq - 7})")
+                print(f"Motion dof length: {curr_motion['dof'].shape[1]}")
+                
+                # 添加更详细的关节类型信息
+                print("\n=== Joint Type Details ===")
+                for i in range(mj_model.njnt):
+                    joint_name = mujoco.mj_id2name(mj_model, mujoco.mjtObj.mjOBJ_JOINT, i)
+                    joint_type = mj_model.jnt_type[i]
+                    joint_type_name = {0: "free", 1: "ball", 2: "slide", 3: "hinge"}.get(joint_type, "unknown")
+                    if hasattr(mj_model, 'jnt_axis') and i < len(mj_model.jnt_axis):
+                        axis = mj_model.jnt_axis[i]
+                        print(f"Joint {i}: {joint_name}, type: {joint_type_name}({joint_type}), axis: {axis}")
+                    else:
+                        print(f"Joint {i}: {joint_name}, type: {joint_type_name}({joint_type}), axis: N/A")
+                
+                print("\n=== DOF Mapping Comparison ===")
+                if 'dof_names' in curr_motion and 'dof_index' in curr_motion:
+                    motion_dof_names = curr_motion['dof_names']
+                    motion_dof_index = curr_motion['dof_index']
+                    print("Motion DOF order:")
+                    for i, (name, idx) in enumerate(zip(motion_dof_names, motion_dof_index)):
+                        print(f"  Motion DOF {i}: {name} (body_index: {idx})")
+                    
+                    print("MuJoCo DOF order (excluding root):")
+                    for i in range(mj_model.nv):
+                        if i >= 6:  # Skip root DOFs (freejoint has 6 DOFs)
+                            joint_id = -1
+                            for j in range(mj_model.njnt):
+                                if mj_model.jnt_dofadr[j] <= i < mj_model.jnt_dofadr[j] + (3 if mj_model.jnt_type[j] == 0 else 1):
+                                    joint_id = j
+                                    break
+                            if joint_id >= 0:
+                                joint_name = mujoco.mj_id2name(mj_model, mujoco.mjtObj.mjOBJ_JOINT, joint_id)
+                                print(f"  MuJoCo DOF {i-6}: {joint_name}")
+                
             mj_data.qpos[:3] = curr_motion['root_trans_offset'][curr_time]
             mj_data.qpos[3:7] = curr_motion['root_rot'][curr_time][[3, 0, 1, 2]]
+            # # print(f"len of curr_motion['dof'][curr_time]: {len(curr_motion['dof'][curr_time])}")
             mj_data.qpos[7:] = curr_motion['dof'][curr_time]
                 
             mujoco.mj_forward(mj_model, mj_data)
