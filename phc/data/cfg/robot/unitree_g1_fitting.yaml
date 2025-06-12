@@ -23,6 +23,11 @@ real_weight: True
 real_weight_porpotion_capsules: True
 real_weight_porpotion_boxes: True
 
+DOF_WEIGHT:
+  5: 10.0
+  11: 10.0
+  default: 1.0
+
 body_names: ['pelvis', 'left_hip_pitch_link', 'left_hip_roll_link', 'left_hip_yaw_link', 'left_knee_link', 'left_ankle_pitch_link', 'left_ankle_roll_link', 'right_hip_pitch_link', 'right_hip_roll_link', 'right_hip_yaw_link', 'right_knee_link', 'right_ankle_pitch_link', 'right_ankle_roll_link', 'torso_link', 'left_shoulder_pitch_link', 'left_shoulder_roll_link', 'left_shoulder_yaw_link', 'left_elbow_pitch_link', 'left_elbow_roll_link', 'left_zero_link', 'left_one_link', 'left_two_link', 'left_three_link', 'left_four_link', 'left_five_link', 'left_six_link', 'right_shoulder_pitch_link', 'right_shoulder_roll_link', 'right_shoulder_yaw_link', 'right_elbow_pitch_link', 'right_elbow_roll_link', 'right_zero_link', 'right_one_link', 'right_two_link', 'right_three_link', 'right_four_link', 'right_five_link', 'right_six_link']
        
 limb_weight_group: 
@@ -59,6 +64,28 @@ extend_config:
     pos: [0.08, 0.0, 0.0]
     rot: [1.0, 0.0, 0.0, 0.0]
 
+# ref: extra point example
+# extend_config:
+#   - joint_name: "left_ankle_roll_link_extra"
+#     parent_name: "left_ankle_roll_link"
+#     pos: [-0.05, 0, 0.065]
+#     rot: [1.0, 0.0, 0.0, 0.0]
+
+#   - joint_name: "right_ankle_roll_link_extra"
+#     parent_name: "right_ankle_roll_link"
+#     pos: [-0.05, 0, 0.065]
+#     rot: [1.0, 0.0, 0.0, 0.0]
+
+#   - joint_name: "contact_left_tip_extra"
+#     parent_name: "contact_left_tip"
+#     pos: [-0.08, 0.015, 0.07]
+#     rot: [1.0, 0.0, 0.0, 0.0]
+
+#   - joint_name: "contact_right_tip_extra"
+#     parent_name: "contact_right_tip"
+#     pos: [-0.08, -0.015, 0.07]
+#     rot: [1.0, 0.0, 0.0, 0.0]
+
 base_link: "torso_link"
 joint_matches:
   - ["pelvis", "Pelvis"]
@@ -77,6 +104,25 @@ joint_matches:
   - ["head_link", "Head"]
   - ["left_toe_link", "L_Toe"]
   - ["right_toe_link", "R_Toe"]
+
+# ref: joint_matches example
+# joint_matches:
+#   - ["base_link", "Pelvis"]
+#   - ["left_hip_roll_link", "L_Hip"]
+#   - ["left_knee_link", "L_Knee"]
+#   - ["left_ankle_roll_link_extra", "L_Ankle"]
+#   - ["right_hip_roll_link", "R_Hip"]
+#   - ["right_knee_link", "R_Knee"]
+#   - ["right_ankle_roll_link_extra", "R_Ankle"]
+#   - ["left_shoulder_roll_link", "L_Shoulder"]
+#   - ["left_elbow_link", "L_Elbow"]
+#   - ["left_hand_yaw_link", "L_Hand"]
+#   - ["right_shoulder_roll_link", "R_Shoulder"]
+#   - ["right_elbow_link", "R_Elbow"]
+#   - ["right_hand_yaw_link", "R_Hand"]
+#   - ["head_pitch_link", "Head"]
+#   - ["contact_left_tip_extra", "L_Toe"]
+#   - ["contact_right_tip_extra", "R_Toe"]
 
 
 smpl_pose_modifier:
